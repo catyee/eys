@@ -1,26 +1,16 @@
-.data-list{
+.org-list{
     cursor: pointer;
     .selector-panel{
         display: flex;
         align-items: center;
     }
-    .el-input-group__append{
-        background-color: #fff;
-        border: none;
+    .el-input{
+        width: 300px;
     }
-    .el-input-group--append .el-input__inner{
-        border: none;
-    }
-    .deep-search{
-        color: #1677FF;
-        cursor: pointer;
-    }
+
     .selector-item{
         padding-left: 40px;
         font-size: 14px;
-    }
-    .el-radio{
-        margin-right: 10px;
     }
     .list-container{
         margin-top: 16px;
@@ -33,21 +23,7 @@
         justify-content: space-between;
         padding-bottom: 20px;
     }
-    .check-num{
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-sizing: border-box;
-        line-height: 46px;
-        padding: 0 24px;
-        width: 100%;
-        background: rgba(0,0,0,0.02);
-        border-radius: 6px;
-        border: 0px solid rgba(0,0,0,0.88);
-        margin-bottom: 10px;
-        color: rgba(0,0,0,0.45);
-        font-size: 14px;
-    }
+
     .el-table__header {
         tr th.el-table__cell{
             background: #FAFAFA;;

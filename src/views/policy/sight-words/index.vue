@@ -1,5 +1,5 @@
 <template>
-  <div class="org-list">
+  <div class="sight-words">
     <Bread-crumbs
       :items="[
         {
@@ -7,12 +7,12 @@
           path: '/index',
         },
         {
-          name: '数据清理',
-          path: '/policy/clean/org-list',
+          name: '政策数据分析',
+          path: '/policy/analyze/sight-words',
         },
         {
-          name: '发文机构名称标准化表',
-          path: '/policy/clean/org-list',
+          name: '高频词列表',
+          path: '/policy/analyze/sight-words',
         },
       ]"
     />
@@ -21,16 +21,17 @@
         <div class="flex">
           <el-input
             v-model="queryParams.searchValue"
-            placeholder="请输入"
+            placeholder="输入关键字"
             class="width"
           >
           </el-input>
-          <el-button class="ml-16" type="primary">查询</el-button>
+          <el-button class="ml-16" type="primary">确定</el-button>
         </div>
       </div>
       <div class="list-container">
         <div class="table-oper">
-          <span class="f16">发文机构名称称标准化表</span>
+          <span class="f16">高音词列表</span>
+          <el-button type="primary">增加</el-button>
         </div>
         <el-table
           :data="list"
@@ -38,10 +39,10 @@
           style="width: 100%"
           :row-class-name="rowStyle"
         >
-          <el-table-column label="原创文机">
+          <el-table-column label="序号">
             <template slot-scope="scope">{{ scope.row.date }}</template>
           </el-table-column>
-          <el-table-column prop="name" label="新发文机"> </el-table-column>
+          <el-table-column prop="name" label="高频词"> </el-table-column>
           <el-table-column
             prop="address"
             label="改变方式"

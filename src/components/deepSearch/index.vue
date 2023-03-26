@@ -6,10 +6,9 @@
       :model="dynamicValidateForm"
       ref="dynamicValidateForm"
       label-width="0px"
-      :rules="deepSearchRule"
     >
       <div v-for="(item,index) in dynamicValidateForm?.deepSearchForm" :key="item.key" class="flex">
-        <el-form-item label="" style="width: 140px">
+        <el-form-item label="" style="width: 140px" >
           <el-select v-model="item.type">
             <el-option label="AND" value="AND"></el-option>
             <el-option label="OR" value="OR"></el-option>
@@ -27,7 +26,9 @@
             <el-option label="实施日期" value="实施日期"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="" class="pr-8" style="width: 350px">
+        <el-form-item label="" class="pr-8" style="width: 350px" :prop="'deepSearchForm.' + index + '.value'"  :rules="{
+            required: true, message: '请输入内容', trigger: 'blur'
+          }">
           <el-input v-model="item.value"></el-input>
         </el-form-item>
         <el-form-item label="" class="pr-8" v-if="index===0">
@@ -58,11 +59,7 @@ export default {
             key: Date.now()
           }
         ]
-      },
-      deepSearchRule: [
-        { required: true, message: '年龄不能为空' },
-        { type: 'number', message: '年龄必须为数字值' }
-      ]
+      }
 
     }
   },
@@ -70,6 +67,7 @@ export default {
     submitForm (formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          console.log(this.dynamicValidateForm, 'vvvvvv')
           alert('submit!')
         } else {
           console.log('error submit!!')

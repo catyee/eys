@@ -32,7 +32,7 @@ export const policy = [
         path: '/policy/clean',
         name: 'policy-clean',
         hidden: false,
-        meta: { title: '政策数据清洁', icon: 'iconevaluate' },
+        meta: { title: '政策数据清洗', icon: 'iconevaluate' },
         redirect: '/policy/clean/org-list',
         component: () => import(/* webpackChunkName: "main" */ '../views/main/main.vue'),
         children: [
@@ -41,7 +41,33 @@ export const policy = [
             name: 'policy-org-list',
             hidden: false,
             meta: { title: '发文机构名称标准化表', icon: '' },
-            component: () => import(/* webpackChunkName: "dataList" */ '../views/index.vue')
+            component: () => import(/* webpackChunkName: "dataList" */ '../views/policy/org-list')
+
+          }
+        ]
+      },
+      {
+        path: '/policy/analyze',
+        name: 'policy-analyze',
+        hidden: false,
+        meta: { title: '政策数据分析', icon: 'iconevaluate' },
+        redirect: '/policy/analyze/sight-words',
+        component: () => import(/* webpackChunkName: "main" */ '../views/main/main.vue'),
+        children: [
+          {
+            path: '/policy/analyze/sight-words',
+            name: 'policy-sight-words',
+            hidden: false,
+            meta: { title: '高频词列表', icon: '' },
+            component: () => import(/* webpackChunkName: "dataList" */ '../views/policy/sight-words')
+
+          },
+          {
+            path: '/policy/analyze/text-contrast',
+            name: 'policy-text-contrast',
+            hidden: false,
+            meta: { title: '文本对比', icon: '' },
+            component: () => import(/* webpackChunkName: "dataList" */ '../views/policy/text-contrast')
 
           }
         ]

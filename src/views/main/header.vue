@@ -6,7 +6,7 @@
       </router-link>
     </div>
     <div class="header-right pr-32">
-      <div @click="logout">退出</div>
+      <div @click="logout" class="f16">退出</div>
        <!-- <el-menu mode="horizontal">
         <el-submenu index="1">
           <span class=" username">{{userName}} 退出</span>

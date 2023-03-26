@@ -1,0 +1,30 @@
+.text-contrast{
+    cursor: pointer;
+    .contrast-panel{
+        background-color: #fff;
+        padding: 24px;
+    }
+    .el-progress{
+        display: flex;
+        align-items: center;
+        width: 350px;
+    }
+    .el-progress__text{
+        white-space: nowrap;
+    }
+    .contrast-content{
+        display: flex;
+        .contrast-l,.contrast-r{
+            padding: 24px;
+            font-size: 14px;
+            background: #FAFAFA;
+            width: 50%;
+            min-height: 300px;
+            
+        }
+        .contrast-l{
+            margin-right: 20px;
+        }
+    }
+   
+}
