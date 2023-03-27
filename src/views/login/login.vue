@@ -37,8 +37,8 @@
 <script>
 import { getCodeImg } from '@/api/login'
 import Cookies from 'js-cookie'
-import { decrypt } from '@/utils/jsencrypt'
-import { setToken } from '@/utils/auth'
+import { encrypt, decrypt } from '@/utils/jsencrypt'
+// import { setToken } from '@/utils/auth'
 export default {
   name: 'Login',
   data () {
@@ -46,7 +46,7 @@ export default {
       codeUrl: '',
       loginForm: {
         username: 'admin',
-        password: 'admin123',
+        password: '123456',
         rememberMe: false,
         code: '',
         uuid: ''
@@ -101,31 +101,31 @@ export default {
       }
     },
     handleLogin () {
-      setToken(222222)
-      this.$router.push({ path: this.redirect || '/' }).catch(() => {})
-      this.loading = false
-      // this.$refs.loginForm.validate(valid => {
-      //   if (valid) {
-      //     this.loading = true;
-      //     if (this.loginForm.rememberMe) {
-      //       Cookies.set("username", this.loginForm.username, { expires: 30 });
-      //       Cookies.set("password", encrypt(this.loginForm.password), { expires: 30 });
-      //       Cookies.set('rememberMe', this.loginForm.rememberMe, { expires: 30 });
-      //     } else {
-      //       Cookies.remove("username");
-      //       Cookies.remove("password");
-      //       Cookies.remove('rememberMe');
-      //     }
-      //     this.$store.dispatch("Login", this.loginForm).then(() => {
-      //       this.$router.push({ path: this.redirect || "/" }).catch(()=>{});
-      //     }).catch(() => {
-      //       this.loading = false;
-      //       if (this.captchaEnabled) {
-      //         this.getCode();
-      //       }
-      //     });
-      //   }
-      // });
+      // setToken(222222)
+      // this.$router.push({ path: this.redirect || '/' }).catch(() => {})
+      // this.loading = false
+      this.$refs.loginForm.validate(valid => {
+        if (valid) {
+          this.loading = true
+          if (this.loginForm.rememberMe) {
+            Cookies.set('username', this.loginForm.username, { expires: 30 })
+            Cookies.set('password', encrypt(this.loginForm.password), { expires: 30 })
+            Cookies.set('rememberMe', this.loginForm.rememberMe, { expires: 30 })
+          } else {
+            Cookies.remove('username')
+            Cookies.remove('password')
+            Cookies.remove('rememberMe')
+          }
+          this.$store.dispatch('Login', this.loginForm).then(() => {
+            this.$router.push({ path: this.redirect || '/' }).catch(() => {})
+          }).catch(() => {
+            this.loading = false
+            if (this.captchaEnabled) {
+              this.getCode()
+            }
+          })
+        }
+      })
     }
   }
 }
@@ -145,26 +145,32 @@ export default {
   margin: 0px auto 30px auto;
   text-align: center;
   color: #707070;
+  font-size: 24px;
+  font-weight: bold;
 }
 
 .login-form {
   //border-radius: 6px;
   //background: #ffffff;
-  width: 400px;
-  padding: 25px 25px 5px 25px;
+  width: 480px;
+  padding: 30px 30px 5px 30px;
 
   .el-input {
-    height: 38px;
+    height: 58px;
 
     input {
-      height: 38px;
+      height: 58px;
     }
+  }
+  .el-form-item{
+    margin-bottom: 33px;
   }
 
   .input-icon {
-    height: 39px;
+    height: 100%;
     width: 14px;
     margin-left: 2px;
+    vertical-align: middle;
   }
 }
 
@@ -199,6 +205,6 @@ export default {
 }
 
 .login-code-img {
-  height: 38px;
+  height: 58px;
 }
 </style>

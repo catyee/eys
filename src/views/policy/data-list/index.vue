@@ -84,25 +84,94 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55"> </el-table-column>
-          <el-table-column label="序号" width="120">
-            <template slot-scope="scope">{{ scope.row.date }}</template>
+          <el-table-column label="序号" width="120" type="index">
           </el-table-column>
-          <el-table-column prop="name" label="标题" width="120">
-          </el-table-column>
+          <el-table-column prop="title" label="标题"> </el-table-column>
           <el-table-column
-            prop="address"
+            prop="originalPublishingDepartment"
             label="原发布部门"
             show-overflow-tooltip
           >
           </el-table-column>
           <el-table-column
-            prop="address1"
+            prop="correctedPublishingDepartment"
             label="校正后发布部门"
             show-overflow-tooltip
           >
           </el-table-column>
+          <el-table-column
+            prop="status"
+            label="清洗确认状态"
+            show-overflow-tooltip
+          >
+          </el-table-column>
+          <el-table-column
+            prop="publicationNumber"
+            label="发布字号"
+            show-overflow-tooltip
+          >
+          </el-table-column>
+          <el-table-column
+            prop="publishDate"
+            label="实施日期"
+            show-overflow-tooltip
+          >
+          </el-table-column>
+          <el-table-column
+            prop="timeEfficient"
+            label="效力级别"
+            show-overflow-tooltip
+          >
+          </el-table-column>
+          <el-table-column
+            prop="writingStructure"
+            label="行文结构"
+            show-overflow-tooltip
+          >
+          </el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+
+              <el-dropdown>
+                <el-button type="primary">
+                  全部操作<i class="el-icon-arrow-down el-icon--right"></i>
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item>
+                    <span class="active-color"> 查看 </span>
+                  </el-dropdown-item>
+                  <el-dropdown-item>
+                    <span class="active-color">删除</span>
+                  </el-dropdown-item>
+                  <el-dropdown-item>
+                    <span
+                      class="active-color"
+                      @click="removeRegister(scope.row.id)"
+                      >修改</span
+                    >
+                  </el-dropdown-item>
+                  <el-dropdown-item>
+                    <span class="active-color">数据清洗</span>
+                  </el-dropdown-item>
+                  <el-dropdown-item>
+                    <span class="active-color">清洗确认</span></el-dropdown-item
+                  >
+                  <el-dropdown-item>
+                    <span class="active-color"
+                      >更新高频词</span
+                    ></el-dropdown-item
+                  >
+                </el-dropdown-menu>
+              </el-dropdown>
+            </template>
+          </el-table-column>
         </el-table>
       </div>
+      <pagination
+      :total="total"
+      :queryParams="queryParams"
+      @initList="initList"
+    ></pagination>
     </div>
     <uploadFiles
       :showPanel="showUploadPanel"
@@ -112,18 +181,21 @@
 </template>
 <script>
 import './index.scss'
+import pagination from '@/components/pagination.vue'
 import BreadCrumbs from '@/components/breadCrumbs.vue'
 import deeSearch from '@/components/deepSearch'
 import uploadFiles from '@/components/uploadFiles'
+import { getPolicyDataList } from '@/api/policy/data-list'
 export default {
   components: {
     BreadCrumbs,
     deeSearch,
-    uploadFiles
+    uploadFiles,
+    pagination
   },
   data () {
     return {
-      showUploadPanel: true,
+      showUploadPanel: false,
       // 选中的列表
       selectedRows: [],
       queryParams: {
@@ -134,47 +206,28 @@ export default {
         // 查询关键字
         searchValue: null
       },
-      list: [
-        {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-06',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-07',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }
-      ],
+      // 总条数
+      total: 0,
+      list: [],
       multipleSelection: []
     }
   },
+  mounted () {
+    this.initList()
+  },
   methods: {
+    // 按关键字搜索
+    handleQuery () {
+      this.queryParams.pageNum = 1
+      this.initList()
+    },
+    // 获取列表
+    initList () {
+      getPolicyDataList(this.queryParams).then((res) => {
+        this.list = res.rows
+        this.total = parseInt(res.total)
+      })
+    },
     // 文件上传
     uploadFiles () {
       this.showUploadPanel = true

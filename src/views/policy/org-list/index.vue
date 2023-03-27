@@ -31,51 +31,117 @@
       <div class="list-container">
         <div class="table-oper">
           <span class="f16">发文机构名称称标准化表</span>
+          <el-button type="primary"  @click="add">增加</el-button>
         </div>
         <el-table
           :data="list"
           tooltip-effect="dark"
           style="width: 100%"
-          :row-class-name="rowStyle"
         >
-          <el-table-column label="原创文机">
-            <template slot-scope="scope">{{ scope.row.date }}</template>
+          <el-table-column label="原发文机构">
+            <template slot-scope="scope">{{ scope.row.originalPublishingDepartment }}</template>
           </el-table-column>
-          <el-table-column prop="name" label="新发文机"> </el-table-column>
+          <el-table-column prop="originalPublishingDepartment" label="新发文机构"> </el-table-column>
           <el-table-column
-            prop="address"
-            label="改变方式"
+            prop="changeMode"
+            label="变更方式"
             show-overflow-tooltip
           >
           </el-table-column>
-          <el-table-column prop="address1" label="备注" show-overflow-tooltip>
+          <el-table-column prop="remarks" label="备注" show-overflow-tooltip>
           </el-table-column>
-          <el-table-column prop="address1" label="操作">
+          <el-table-column label="操作">
             <template slot-scope="scope">
-              <span class="defaultColor" @click="edit(scope.row.registerId)">
+              <span class="defaultColor" @click="edit(scope.row)">
                 修改
               </span>
               <span
                 class="defaultColor"
-                @click="removeRegister(scope.row.registerId)"
+                @click="handleDelete(scope.row.nameStandardizationId)"
                 >删除</span
               >
             </template>
           </el-table-column>
         </el-table>
       </div>
+         <pagination
+      :total="total"
+      :queryParams="queryParams"
+      @initList="initList"
+    ></pagination>
+       <!-- 新增机构 -->
+       <div class="add-panel">
+        <el-dialog
+          :visible.sync="showAdd"
+          width="50%"
+          :close-on-click-modal="false"
+        >
+          <div slot="title" class="title">{{ title }}</div>
+          <div class="desc color-danger">必填项 *</div>
+          <div class="mt-30 pb-30">
+            <el-form
+              label-width="150px"
+              :model="ruleForm"
+              ref="ruleForm"
+              :rules="rules"
+            >
+              <el-form-item  label="原发文机构：" prop="originalPublishingDepartment">
+                <el-input
+                  placeholder="请输入原发文机构"
+                  v-model="ruleForm.originalPublishingDepartment"
+                ></el-input>
+              </el-form-item>
+              <el-form-item  label="新发文机构：" prop="correctedPublishingDepartment">
+                <el-input
+                  placeholder="请输入新发文机构"
+                  v-model="ruleForm.correctedPublishingDepartment"
+                ></el-input>
+              </el-form-item>
+              <el-form-item label="备注：" prop="remarks">
+                <el-input
+                  placeholder="请输入备注"
+                  v-model="ruleForm.remarks"
+                ></el-input>
+              </el-form-item>
+              <el-form-item label="变更方式：" prop="changeMode">
+                <el-select v-model="ruleForm.changeMode" placeholder="请选择变更方式">
+                  <el-option label="直接更名" value="直接更名"></el-option>
+                  <el-option label="撤销" value="撤销"></el-option>
+                  <el-option label="拆分更名" value="拆分更名"></el-option>
+                  <el-option label="合并更名" value="合并更名"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-form>
+          </div>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="showAdd = false">取 消</el-button>
+            <el-button type="primary" @click.prevent="confirmSubmit"
+              >确 定</el-button
+            >
+          </span>
+        </el-dialog>
+      </div>
     </div>
   </div>
 </template>
 <script>
 import './index.scss'
+import pagination from '@/components/pagination.vue'
 import BreadCrumbs from '@/components/breadCrumbs.vue'
+import { getOrgList, updateOrg, addOrg, deleteOrg } from '@/api/policy/org'
+
 export default {
   components: {
-    BreadCrumbs
+    BreadCrumbs,
+    pagination
   },
   data () {
     return {
+      title: '', // dialog标题
+      // 是否显示新增弹框
+      showAdd: false,
+      // 管理员数据
+      ruleForm: {},
       selectedRows: [],
       queryParams: {
         // 页数
@@ -85,64 +151,119 @@ export default {
         // 查询关键字
         searchValue: null
       },
-      list: [
-        {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-06',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-07',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }
-      ],
-      multipleSelection: []
+      // 总条数
+      total: 0,
+      list: [],
+      rules: {
+        originalPublishingDepartment: [
+          { required: true, message: '请输入原发文机构', trigger: 'blur' }
+        ],
+        correctedPublishingDepartment: [
+          { required: true, message: '请输入新发文机构', trigger: 'blur' }
+        ],
+        changeMode: [
+          { required: true, message: '请选择变更方式', trigger: 'blur' }
+        ]
+      }
     }
   },
+  mounted () {
+    this.initList()
+  },
+
   methods: {
-    // 选中一行表格
-    handleSelectionChange (val) {
-      this.selectedRows = val.map((item) => item.date)
-      this.multipleSelection = val
+    // 删除用户
+    handleDelete (id) {
+      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          deleteOrg(id).then((res) => {
+            if (res.code === 200) {
+              this.msgSuccess('删除成功')
+              this.handleQuery()
+            }
+          })
+        })
+        .catch(() => {
+          this.msgInfo('已取消删除')
+        })
     },
-    // 设置选中表格行颜色
-    rowStyle ({ row }) {
-      var arr = this.selectedRows
-      for (let i = 0; i < arr.length; i++) {
-        if (row.date === arr[i]) {
-          return 'rowStyle'
+    confirmSubmit () {
+      const text = this.ruleForm.nameStandardizationId ? '修改' : '创建'
+      this.$refs.ruleForm.validate((valid) => {
+        // 验证通过
+        if (valid) {
+          this.$confirm(`您确定要${text}该信息吗?`, '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          })
+            .then(() => {
+              this.submitUser()
+            })
+            .catch(() => {
+              this.$message({
+                type: 'info',
+                message: '已取消'
+              })
+            })
+        } else {
+          console.log('error submit!!')
+          return false
         }
+      })
+    },
+    // 提交用户信息
+    submitUser () {
+      if (this.ruleForm.nameStandardizationId) {
+      // 编辑用户
+        updateOrg(this.ruleForm).then((res) => {
+          if (res.code === 200) {
+            this.msgSuccess('修改成功')
+            this.showAdd = false
+            this.initList()
+          } else {
+            this.msgError(res.msg)
+          }
+        })
+      } else {
+      // 新建用户
+        addOrg(this.ruleForm).then((res) => {
+          if (res.code === 200) {
+            this.msgSuccess('添加成功')
+            this.showAdd = false
+            this.initList()
+          } else {
+            this.msgError(res.msg)
+          }
+        })
       }
     },
-    // 取消选择
-    cancelTableSelect () {
-      this.$refs.multipleTable.clearSelection()
+    // 新增org
+    add (user) {
+      this.title = '新增发文机构'
+      this.showAdd = true
+    },
+    // 修改用户信息
+    edit (user) {
+      this.title = '修改发文机构'
+      this.ruleForm = user
+      this.showAdd = true
+    },
+    // 按关键字搜索
+    handleQuery () {
+      this.queryParams.pageNum = 1
+      this.initList()
+    },
+    // 获取列表
+    initList () {
+      getOrgList(this.queryParams).then(res => {
+        this.list = res.rows
+        this.total = parseInt(res.total)
+      })
     }
   }
 }

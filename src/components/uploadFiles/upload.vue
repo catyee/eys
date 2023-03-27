@@ -2,6 +2,7 @@
     <el-upload
     class="upload"
     :ref="uploadFileRef"
+    :auto-upload="false"
     :on-progress="uploadProcess"
     :before-upload="beforeUpload"
     :show-file-list="false"
@@ -44,17 +45,17 @@ export default {
   },
   methods: {
     handleChange (file, fileLists) {
-      console.log(file)
-      console.log(fileLists)
+      // console.log(file)
+      console.log(fileLists, '3333333')
       // 本地服务器路径
-      console.log(URL.createObjectURL(file.raw))
+    //  console.log(URL.createObjectURL(file.raw))
       // 本地电脑路径
-      console.log(document.getElementsByClassName('el-upload__input')[0].value, 'aaaaaaaaa')
+      // console.log(document.getElementsByClassName('el-upload__input')[0].value, 'aaaaaaaaa')
     },
     beforeUpload (file) {
       // 上传到服务器之前 禁止再次上传
       this.enableUpload = false
-      console.log(file, 'fileeeee')
+      //  console.log(file, 'fileeeee')
       //   const types = ['image/jpeg', 'image/jpg', 'image/png']
 
     //   if (types.indexOf(file.type) === -1) {

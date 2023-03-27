@@ -31,53 +31,99 @@
       <div class="list-container">
         <div class="table-oper">
           <span class="f16">高音词列表</span>
-          <el-button type="primary">增加</el-button>
+          <el-button type="primary" @click="add">增加</el-button>
         </div>
-        <el-table
-          :data="list"
-          tooltip-effect="dark"
-          style="width: 100%"
-          :row-class-name="rowStyle"
-        >
-          <el-table-column label="序号">
-            <template slot-scope="scope">{{ scope.row.date }}</template>
+        <el-table :data="list" tooltip-effect="dark" style="width: 100%">
+          <el-table-column prop="word" label="高频词"> </el-table-column>
+          <el-table-column prop="remarks" label="备注" show-overflow-tooltip>
           </el-table-column>
-          <el-table-column prop="name" label="高频词"> </el-table-column>
-          <el-table-column
-            prop="address"
-            label="改变方式"
-            show-overflow-tooltip
-          >
-          </el-table-column>
-          <el-table-column prop="address1" label="备注" show-overflow-tooltip>
-          </el-table-column>
-          <el-table-column prop="address1" label="操作">
+          <el-table-column label="操作">
             <template slot-scope="scope">
-              <span class="defaultColor" @click="edit(scope.row.registerId)">
+              <span class="defaultColor" @click="edit(scope.row)">
                 修改
               </span>
               <span
                 class="defaultColor"
-                @click="removeRegister(scope.row.registerId)"
+                @click="handleDelete(scope.row.highFrequencyWordId)"
                 >删除</span
               >
             </template>
           </el-table-column>
         </el-table>
       </div>
+      <pagination
+        :total="total"
+        :queryParams="queryParams"
+        @initList="initList"
+      ></pagination>
+    </div>
+    <!-- 新增机构 -->
+    <div class="add-panel">
+      <el-dialog
+        :visible.sync="showAdd"
+        width="30%"
+        :close-on-click-modal="false"
+      >
+        <div slot="title" class="title">高频词{{title}}</div>
+        <div class="mt-10 pb-10">
+          <el-form
+            label-width="150px"
+            :model="ruleForm"
+            ref="ruleForm"
+            :rules="rules"
+          >
+            <el-form-item
+              label=""
+              prop="newWords"
+              v-if="isEdit"
+            >
+              <el-input
+                type="textarea"
+                placeholder="请输入高频词，批量添加用“，”分隔"
+                v-model="ruleForm.newWords"
+              ></el-input>
+            </el-form-item>
+            <el-form-item  label="高频词：" prop="word">
+              <el-input
+                placeholder="请输入高频词"
+                v-model="ruleForm.word"
+              ></el-input>
+            </el-form-item>
+            <el-form-item  label="备注：" prop="remarks">
+              <el-input
+                placeholder="请输入备注"
+                v-model="ruleForm.remarks"
+              ></el-input>
+            </el-form-item>
+          </el-form>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="showAdd = false">取 消</el-button>
+          <el-button type="primary" @click.prevent="confirmSubmit"
+            >确 定</el-button
+          >
+        </span>
+      </el-dialog>
     </div>
   </div>
 </template>
 <script>
 import './index.scss'
+import pagination from '@/components/pagination.vue'
 import BreadCrumbs from '@/components/breadCrumbs.vue'
+import { getSightWords, deleteWord, addWords, updateWord } from '@/api/policy/sight-words'
+
 export default {
   components: {
-    BreadCrumbs
+    BreadCrumbs,
+    pagination
   },
   data () {
     return {
-      selectedRows: [],
+      title: '',
+      showAdd: false,
+      isEdit: false,
+      ruleForm: {},
       queryParams: {
         // 页数
         pageNum: 1,
@@ -86,64 +132,122 @@ export default {
         // 查询关键字
         searchValue: null
       },
-      list: [
-        {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-06',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-07',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }
-      ],
-      multipleSelection: []
+      // 总条数
+      total: 0,
+      list: [],
+      rules: {
+        newWords: [
+          { required: true, message: '请输入高频词', trigger: 'blur' }
+        ]
+      }
     }
   },
+  mounted () {
+    this.initList()
+  },
   methods: {
-    // 选中一行表格
-    handleSelectionChange (val) {
-      this.selectedRows = val.map((item) => item.date)
-      this.multipleSelection = val
+    // 按关键字搜索
+    handleQuery () {
+      this.queryParams.pageNum = 1
+      this.initList()
     },
-    // 设置选中表格行颜色
-    rowStyle ({ row }) {
-      var arr = this.selectedRows
-      for (let i = 0; i < arr.length; i++) {
-        if (row.date === arr[i]) {
-          return 'rowStyle'
+    add () {
+      this.title = '新增'
+      this.isEdit = false
+      this.showAdd = true
+      this.ruleForm = {}
+    },
+    // 修改用户信息
+    edit (user) {
+      this.title = '修改'
+      this.ruleForm = user
+      this.showAdd = true
+    },
+    confirmSubmit () {
+      this.$refs.ruleForm.validate((valid) => {
+        // 验证通过
+        if (valid) {
+          this.$confirm(`您确定要${this.title}吗?`, '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          })
+            .then(() => {
+              this.submit()
+            })
+            .catch(() => {
+              this.$message({
+                type: 'info',
+                message: '已取消'
+              })
+            })
+        } else {
+          console.log('error submit!!')
+          return false
         }
+      })
+    },
+    submit () {
+      if (this.ruleForm.highFrequencyWordId) {
+        // 编辑用户
+        updateWord(this.ruleForm).then((res) => {
+          if (res.code === 200) {
+            this.msgSuccess('修改成功')
+            this.showAdd = false
+            this.initList()
+          } else {
+            this.msgError(res.msg)
+          }
+        })
+      } else {
+        const words = this.ruleForm.newWords.replace('，', ',').split(',')
+        const data = []
+        words.forEach(word => {
+          data.push({
+            delFlag: 0,
+            remarks: '',
+            word
+          })
+        })
+        // 新建
+        addWords(data).then((res) => {
+          console.log(this.ruleForm, 'aaaaa')
+          if (res.code === 200) {
+            this.msgSuccess('添加成功')
+            this.showAdd = false
+            this.initList()
+          } else {
+            this.msgError(res.msg)
+          }
+        })
       }
     },
-    // 取消选择
-    cancelTableSelect () {
-      this.$refs.multipleTable.clearSelection()
+    // 获取列表
+    initList () {
+      getSightWords(this.queryParams).then((res) => {
+        this.list = res.rows
+        this.total = parseInt(res.total)
+      })
+    },
+
+    // 删除用户
+    handleDelete (id) {
+      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          deleteWord(id).then((res) => {
+            if (res.code === 200) {
+              this.msgSuccess('删除成功')
+              this.handleQuery()
+            }
+          })
+        })
+        .catch(() => {
+          this.msgInfo('已取消删除')
+        })
     }
   }
 }

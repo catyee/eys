@@ -65,7 +65,7 @@ export const policy = [
           {
             path: '/policy/analyze/text-contrast',
             name: 'policy-text-contrast',
-            hidden: false,
+            hidden: true,
             meta: { title: '文本对比', icon: '' },
             component: () => import(/* webpackChunkName: "dataList" */ '../views/policy/text-contrast')
 

@@ -1,5 +1,10 @@
 .data-list{
     cursor: pointer;
+    .active-color{
+        color: #1677FF;
+        cursor: pointer;
+        margin-left: 10px;
+    }
     .selector-panel{
         display: flex;
         align-items: center;

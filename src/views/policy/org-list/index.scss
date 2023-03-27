@@ -1,5 +1,28 @@
 .org-list{
     cursor: pointer;
+    .add-panel{
+        .title{
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .desc{
+            text-align: right;
+            font-weight: 400;
+        }
+        .el-select,.el-input,.el-input__inner{
+            display: inline-block;
+            width: 100%;
+        }
+        .el-dialog__header{
+            border-bottom: 1px solid $border-color;
+        }
+        .el-dialog__footer{
+            border-top: 1px solid $border-color;
+        }
+        .el-dialog__body{
+            padding: 20px;
+        }
+    }
     .selector-panel{
         display: flex;
         align-items: center;

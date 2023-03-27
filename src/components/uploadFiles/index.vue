@@ -9,10 +9,11 @@
       <div slot="title" class="title">文件上传</div>
       <div class="file-type">
         <span>数据格式：</span>
-        <el-radio-group v-model="fileType">
+        <span class="defaultColor">Word</span>
+        <!-- <el-radio-group v-model="fileType">
           <el-radio label="Word">Word</el-radio>
           <el-radio label="Excel">Excel</el-radio>
-        </el-radio-group>
+        </el-radio-group> -->
       </div>
       <div class="mt-20">
         <div class="flex">
