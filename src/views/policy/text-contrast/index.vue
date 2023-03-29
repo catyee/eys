@@ -29,25 +29,25 @@
         <div class="contrast-l ">
             <div class="item flex">
               <span>文本名称：</span>
-              <span>111</span>
+              <span></span>
             </div>
         </div>
         <div class="contrast-r">
           <div class="item flex">
             <span>文本名称：</span>
-            <span>111</span>
+            <span></span>
           </div>
           <div class="item flex">
             <span>高频词：</span>
-            <span>111</span>
+            <span></span>
           </div>
           <div class="item flex">
             <span>增加的突发词：</span>
-            <span>111</span>
+            <span></span>
           </div>
           <div class="item flex">
             <span>减少的高频词：</span>
-            <span>111</span>
+            <span></span>
           </div>
         </div>
       </div>

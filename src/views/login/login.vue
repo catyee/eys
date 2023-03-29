@@ -131,7 +131,7 @@ export default {
 }
 </script>
 
-<style rel="stylesheet/scss" lang="scss">
+<style rel="stylesheet/scss" lang="scss" scoped>
 .login {
   display: flex;
   justify-content: center;
@@ -167,7 +167,8 @@ export default {
   }
 
   .input-icon {
-    height: 100%;
+    height: 38px!important;
+    box-sizing: border-box;
     width: 14px;
     margin-left: 2px;
     vertical-align: middle;

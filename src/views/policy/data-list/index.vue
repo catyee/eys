@@ -60,8 +60,8 @@
             <el-button type="primary" @click="uploadFiles">文件上传</el-button>
             <template v-if="multipleSelection?.length">
               <el-button type="primary">数据清洗</el-button>
-              <el-button type="primary">更新高频词</el-button>
-              <el-button type="primary">文本对比</el-button>
+              <el-button type="primary" @click.native="handleUpdateWords(multipleSelection[0])">更新高频词</el-button>
+              <el-button type="primary" @click.native="compareText">文本对比</el-button>
               <el-button type="primary">行文结构合并</el-button>
               <el-button type="primary">整篇文章合并</el-button>
             </template>
@@ -75,6 +75,7 @@
           <div class="defaultColor" @click="cancelTableSelect">取消选择</div>
         </div>
         <el-table
+          v-loading="loading"
           ref="multipleTable"
           :data="list"
           cell-class-name="list-row"
@@ -118,7 +119,7 @@
           >
           </el-table-column>
           <el-table-column
-            prop="timeEfficient"
+            prop="effectivenessLevel"
             label="效力级别"
             show-overflow-tooltip
           >
@@ -137,26 +138,26 @@
                   全部操作<i class="el-icon-arrow-down el-icon--right"></i>
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item>
+                  <el-dropdown-item @click.native="viewDetail(scope.row)">
                     <span class="active-color"> 查看 </span>
                   </el-dropdown-item>
-                  <el-dropdown-item>
+                  <el-dropdown-item  @click.native="handleDelete(scope.row)">
                     <span class="active-color">删除</span>
                   </el-dropdown-item>
-                  <el-dropdown-item>
+                  <el-dropdown-item  @click.native="updateData(scope.row)">
                     <span
                       class="active-color"
-                      @click="removeRegister(scope.row.id)"
                       >修改</span
                     >
                   </el-dropdown-item>
-                  <el-dropdown-item>
+                  <el-dropdown-item @click.native="handleDataClear(scope.row.policyFileId)">
                     <span class="active-color">数据清洗</span>
                   </el-dropdown-item>
-                  <el-dropdown-item>
+                  <!-- <el-dropdown-item>
                     <span class="active-color">清洗确认</span></el-dropdown-item
-                  >
-                  <el-dropdown-item>
+                  > -->
+                  <el-dropdown-item
+                   @click.native="handleUpdateWords(scope.row)">
                     <span class="active-color"
                       >更新高频词</span
                     ></el-dropdown-item
@@ -175,8 +176,10 @@
     </div>
     <uploadFiles
       :showPanel="showUploadPanel"
+      @initList="initList"
       @closeModal="showUploadPanel = false"
     />
+    <updatePolicy :policyData="policyData" :showPanel="showUpdatePanel"   @closeModal="showUpdatePanel = false"/>
   </div>
 </template>
 <script>
@@ -185,16 +188,24 @@ import pagination from '@/components/pagination.vue'
 import BreadCrumbs from '@/components/breadCrumbs.vue'
 import deeSearch from '@/components/deepSearch'
 import uploadFiles from '@/components/uploadFiles'
-import { getPolicyDataList } from '@/api/policy/data-list'
+import updatePolicy from '@/components/updatePolicy'
+import { getPolicyDataList, getPolicyData, getPolicyDetailData, dataClear } from '@/api/policy/data-list'
 export default {
   components: {
     BreadCrumbs,
     deeSearch,
     uploadFiles,
-    pagination
+    pagination,
+    updatePolicy
   },
   data () {
     return {
+      // 更新高频词中
+      loading: false,
+      policyData: [],
+      // 修改弹框
+      showUpdatePanel: false,
+      // 上传弹框
       showUploadPanel: false,
       // 选中的列表
       selectedRows: [],
@@ -216,6 +227,71 @@ export default {
     this.initList()
   },
   methods: {
+    // 文本对比
+    compareText () {
+      this.$router.push({ path: '/policy/analyze/text-contrast' })
+    },
+    // 更新高频词
+    handleUpdateWords (data) {
+      this.loading = true
+      window.setTimeout(() => {
+        this.loading = false
+        this.msgSuccess('更新成功')
+        this.initList()
+      }, 2000)
+    },
+    // 查看
+    viewDetail (data) {
+      console.log(data, 'aaaaa')
+      this.$router.push({
+        path: '/policy/manage/policyDetail/' + data.policyFileId
+      })
+    },
+    // 数据清洗
+    handleDataClear (ids) {
+      dataClear(ids).then(res => {
+
+      })
+    },
+    // 删除
+    handleDelete (data) {
+      console.log(3333333)
+      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.initList()
+          this.msgSuccess('删除成功')
+          // deleteData(data.policyDataId).then((res) => {
+          //   if (res.code === 200) {
+          //     this.msgSuccess('删除成功')
+          //     this.handleQuery()
+          //   }
+          // })
+        })
+        .catch(() => {
+          this.msgInfo('已取消删除')
+        })
+    },
+    // 更新政策信息
+    updateData (data) {
+      getPolicyData(data.policyDataId).then(res => {
+        if (res.code === 200) {
+          this.showUpdatePanel = true
+          const data1 = res.data
+          getPolicyDetailData(data.policyFileId).then(res => {
+            if (res.code === 200) {
+              const data2 = res.data
+              this.policyData = Object.assign(data1, data2)
+            }
+          })
+        } else {
+
+        }
+      })
+    },
     // 按关键字搜索
     handleQuery () {
       this.queryParams.pageNum = 1
@@ -234,14 +310,14 @@ export default {
     },
     // 选中一行表格
     handleSelectionChange (val) {
-      this.selectedRows = val.map((item) => item.date)
+      this.selectedRows = val.map((item) => item.policyDataId)
       this.multipleSelection = val
     },
     // 设置选中表格行颜色
     rowStyle ({ row }) {
       var arr = this.selectedRows
       for (let i = 0; i < arr.length; i++) {
-        if (row.date === arr[i]) {
+        if (row.policyDataId === arr[i]) {
           return 'rowStyle'
         }
       }
