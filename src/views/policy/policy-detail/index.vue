@@ -1,81 +1,100 @@
 <template>
   <div class="policy-detail">
     <Bread-crumbs
-      :items="[
-        {
-          name: '主页',
-          path: '/index',
-        },
-        {
-          name: '政策模块管理',
-          path: '/policy/manage',
-        },
-        {
-          name: '查看',
-          path: '/policy/manage/policyDetail/' + policyFileId,
-        },
-      ]"
+      :items="breadItems"
     />
     <div class="text-container">
       <div class="top-oper">
         <div class="title">标选行文结构</div>
-        <el-button type="primary"> 确认 </el-button>
+        <el-button type="primary" @click="handleSave" v-if="!isViewMode"> 确认 </el-button>
       </div>
       <div class="content">
-        <div class="left" @mouseup="getSelection" v-html="fileText"></div>
+        <div class="left" id="textContent" v-html="fileText"></div>
         <div class="right">
           <div class="word item">
             <div class="title">文本高频词：</div>
-            <div class="mt-16 mb-16 defaultColor">商业309次</div>
+            <div class="mt-16 mb-16 defaultColor">{{fileMarks.frequentWord}}</div>
             <div class="chart"></div>
           </div>
           <div class="item">
             <div class="top-oper">
               <div class="title">背景：</div>
               <el-button
-                :type="type === 1 ? 'success' : 'primary'"
+                v-if="!isViewMode"
+                :type="type === 1 && editWord ? 'warning' : 'primary'"
+                :disabled="type === 1 && editWord"
                 @click="handleUpdate(1)"
               >
-                {{ type === 1 ? "保存" : "修改" }}
+                {{ type === 1 && editWord ? "修改中" : "修改" }}
               </el-button>
             </div>
-            <div class="text-content">{{ background }}</div>
+            <div class="text-content"  :class="{'active': type ===1}"
+            @click="handleShowWord(1)">
+                {{
+                  fileMarks.background.text &&
+                  fileMarks.background.text.length > 100
+                    ? fileMarks.background.text.slice(0, 100) + "..."
+                    : fileMarks.background.text
+                }}
+              </div>
           </div>
           <div class="item">
             <div class="top-oper">
               <div class="title">主题内容：</div>
               <el-button
-                :type="type === 2 ? 'success' : 'primary'"
+                v-if="!isViewMode"
+                :type="type === 2 && editWord ? 'warning' : 'primary'"
+                :disabled="type === 2 && editWord"
                 @click="handleUpdate(2)"
               >
-                {{ type === 2 ? "保存" : "修改" }}
+                {{ type === 2 && editWord? "修改中" : "修改" }}
               </el-button>
             </div>
-            <div class="text-content">测试测试测试</div>
+            <div class="text-content"  :class="{'active': type ===2}"
+            @click="handleShowWord(2)">
+                {{
+                  fileMarks.subjectContent.text &&
+                  fileMarks.subjectContent.text.length > 100
+                    ? fileMarks.subjectContent.text.slice(0, 100) + "..."
+                    :  fileMarks.subjectContent.text
+                }}
+              </div>
           </div>
           <div class="item">
             <div class="top-oper">
               <div class="title">保护措施</div>
               <el-button
-                :type="type === 3 ? 'success' : 'primary'"
+                v-if="!isViewMode"
+                :type="type === 3 && editWord ? 'warning' : 'primary'"
+                :disabled="type === 3 && editWord "
                 @click="handleUpdate(3)"
               >
-                {{ type === 3 ? "保存" : "修改" }}
+                {{ type === 3 && editWord ? "修改中" : "修改" }}
               </el-button>
             </div>
-            <div class="text-content">测试测试测试</div>
+            <div
+                class="text-content"
+                :class="{'active': type ===3}"
+                @click="handleShowWord(3)"
+              >
+                {{
+                  fileMarks.safeguardMeasure.text &&
+                  fileMarks.safeguardMeasure.text.length > 100
+                    ? fileMarks.safeguardMeasure.text.slice(0, 100 )+ "..."
+                    : fileMarks.safeguardMeasure.text
+                }}
+              </div>
           </div>
           <div class="item">
             <div class="top-oper">
               <div class="title">附件</div>
               <el-button
-                :type="type === 4 ? 'success' : 'primary'"
-                @click="handleUpdate(4)"
+                @click="handleDownload"
               >
-                {{ type === 4 ? "保存" : "修改" }}
+                下载
               </el-button>
             </div>
-            <div class="text-content">测试测试测试</div>
+            <div class="text-content" style="color:#1677FF">附件名：{{fileMarks.attachmentFileName}}</div>
           </div>
         </div>
       </div>
@@ -83,16 +102,10 @@
   </div>
 </template>
 <script>
-// 你好，这是必应。我可以帮你用vue来实现，对页面上的文本内容进行标注，用鼠标选中某一句话后，进行高亮显示，并得到选中的话以及所在位置。😊
-// 根据搜索结果1，你可以使用以下步骤来实现这个功能：
-// 在你的页面中添加一个包含文本内容的元素，例如一个<p>标签。
-// 为这个元素添加一个@mouseup事件监听器，当用户松开鼠标时触发一个方法。
-// 在这个方法中，使用window.getSelection()方法来获取用户选中的文本对象。
-// 使用text对象的toString()方法来获取选中的文本内容，并使用anchorOffset和focusOffset属性来获取选中的起始和结束位置。
-// 使用String类的slice()和replace()方法来将原始文本分割为三部分：选中前的部分、选中的部分、选中后的部分，并将选中的部分用<span>标签包裹起来，并添加一个高亮样式。
-// 将三部分重新拼接成一个新的字符串，并使用v-html指令将其渲染到页面上。
 import './index.scss'
 import BreadCrumbs from '@/components/breadCrumbs.vue'
+import Highlighter from 'web-highlighter'
+import { getPolicyDetailData, updateFileData } from '@/api/policy/data-list'
 
 export default {
   components: {
@@ -100,52 +113,222 @@ export default {
   },
   data () {
     return {
-      selectText: '',
+      breadItems: [],
+      // 是否是查看模式
+      isViewMode: true,
+      // 是否修改高亮内容
+      editWord: false,
+      // 高亮实例
+      highlighter: null,
+      // 选中的文本
+      selectObj: null,
       // 选择类型
       type: null,
-      // 背景
-      background: '',
-      fileText:
-        '测试文档测试文档测试文档',
-      policyFileId: null
+      fileText: null,
+      policyFileId: null,
+      // 获取到的文件数据
+      originFileData: {},
+      // 需要编辑的数据
+      fileMarks: {
+        background: {},
+        subjectContent: {},
+        safeguardMeasure: {},
+        attachmentFileName: {},
+        attachmentUrl: '',
+        frequentWord: ''
+      }
+    }
+  },
+  watch: {
+    selectObj (v) {
+      switch (this.type) {
+        case 1:
+          this.fileMarks.background = v
+          break
+        case 2:
+          this.fileMarks.subjectContent = v
+          break
+        case 3:
+          console.log(v, '7777777')
+          this.fileMarks.safeguardMeasure = v
+          break
+      }
+    },
+    // 判断是否开启高亮配置
+    editWord (v) {
+      if (!v) {
+        this.highlighter.stop()
+      } else {
+        this.highlighter.run()
+      }
     }
   },
   created () {
     this.policyFileId = this.$route.params.id
-    console.log(this.policyFileId, 333333)
+    this.isViewMode = !!this.$route.query.isView
+    if (this.isViewMode) {
+      this.breadItems = [
+        {
+          name: '主页',
+          path: '/index'
+        },
+        {
+          name: '政策模块管理',
+          path: '/policy/manage'
+        },
+        {
+          name: '查看',
+          path: '/policy/manage/policyDetail/' + this.policyFileId + '?isView=1'
+        }
+      ]
+    } else {
+      this.breadItems = [
+        {
+          name: '主页',
+          path: '/index'
+        },
+        {
+          name: '政策模块管理',
+          path: '/policy/manage'
+        },
+        {
+          name: '标选行文结构',
+          path: '/policy/manage/policyDetail/' + this.policyFileId
+        }
+      ]
+    }
+  },
+
+  mounted () {
+    this.getFileData()
+    this.highlighter = new Highlighter({
+      $root: document.getElementById('textContent')
+    })
+    const _this = this
+    this.highlighter.on(
+      Highlighter.event.CREATE,
+      function ({ sources }, inst, e) {
+        if (_this.selectObj && _this.selectObj.id) {
+          if (_this.editWord) {
+            _this.highlighter.remove(_this.selectObj.id)
+          }
+        }
+        _this.selectObj = sources[0]
+      }
+    )
+  },
+  beforeDestroy () {
+    this.highlighter.dispose()
   },
   methods: {
-    getSelection () {
-      let newFileText = ''
-      this.fileText = this.fileText.toString()
-      this.fileText = this.fileText.replace(
-        '<span style="background: red">',
-        ''
-      )
-      this.fileText = this.fileText.replace('</span>', '')
-      console.log(this.fileText, ' this.fileText this.fileText this.fileText')
-
-      const selObj = window.getSelection()
-      const selection = selObj.getRangeAt(0)
-      // 选中的文字
-      this.selectText = selection.toString()
-      let anchorOffset = window.getSelection().anchorOffset
-      let focusOffset = window.getSelection().focusOffset
-      let temp
-      if (anchorOffset > focusOffset) {
-        temp = anchorOffset
-        anchorOffset = focusOffset
-        focusOffset = temp
-      }
-      const beforeStr = this.fileText.slice(0, anchorOffset)
-      const str = `<span style="background: red">${this.selectText}</span>`
-      const afterStr = this.fileText.slice(focusOffset)
-      newFileText = beforeStr + str + afterStr
-      this.fileText = newFileText
-      console.log(anchorOffset, focusOffset, selection, window.getSelection(), 9999999999)
-      // selection.removeAllRanges()
+    // 点击保存
+    handleSave () {
+      this.editWord = false
+      this.$confirm('您确定要保存吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          // const data = Object.assign(this.originFileData, this.fileMarks)
+          updateFileData(this.fileMarks).then((res) => {
+            if (res.code === 200) {
+              this.msgSuccess('保存成功')
+            } else {
+              this.msgError('保存失败')
+            }
+          })
+        })
+        .catch(() => {
+          this.msgInfo('已取消保存')
+        })
     },
+    // 下载附件
+    handleDownload () {
+      if (this.fileMarks.attachmentUrl) {
+        window.open(this.fileMarks.attachmentUrl)
+      } else {
+        this.msgError('附件地址错误')
+      }
+    },
+    // 点击在文本中高亮文字
+    handleShowWord (type) {
+      // 清除页面中现有的高亮
+      this.highlighter.removeAll()
+      this.type = type
+      this.editWord = false
+      switch (type) {
+        case 1: {
+          const background = this.fileMarks.background
+          this.highlighter.fromStore(background.startMeta, background.endMeta, background.text, background.id)
+          break
+        }
+
+        case 2: {
+          const subjectContent = this.fileMarks.subjectContent
+          this.highlighter.fromStore(subjectContent.startMeta, subjectContent.endMeta, subjectContent.text, subjectContent.id)
+          break
+        }
+
+        case 3: {
+          const safeguardMeasure = this.fileMarks.safeguardMeasure
+          this.highlighter.fromStore(safeguardMeasure.startMeta, safeguardMeasure.endMeta, safeguardMeasure.text, safeguardMeasure.id)
+          break
+        }
+      }
+    },
+    getFileData () {
+      getPolicyDetailData(this.policyFileId).then((res) => {
+        if (res.code === 200) {
+          const data = res.data
+          this.originFileData = data
+          this.fileText = data.cleanedContent
+          this.fileMarks = {
+            background: data.background || {},
+            subjectContent: data.subjectContent || {},
+            safeguardMeasure: data.safeguardMeasure || {},
+
+            attachmentUrl: data.attachmentUrl,
+            attachmentFileName: data.attachmentFileName,
+            frequentWord: data.frequentWord
+          }
+        }
+      })
+    },
+    // getSelection () {
+    //   let newFileText = ''
+    //   this.fileText = this.fileText.toString()
+    //   this.fileText = this.fileText.replace(
+    //     '<span style="background: red">',
+    //     ''
+    //   )
+    //   this.fileText = this.fileText.replace('</span>', '')
+    //   console.log(this.fileText, ' this.fileText this.fileText this.fileText')
+
+    //   const selObj = window.getSelection()
+    //   const selection = selObj.getRangeAt(0)
+    //   // 选中的文字
+    //   this.selectText = selection.toString()
+    //   let anchorOffset = window.getSelection().anchorOffset
+    //   let focusOffset = window.getSelection().focusOffset
+    //   let temp
+    //   if (anchorOffset > focusOffset) {
+    //     temp = anchorOffset
+    //     anchorOffset = focusOffset
+    //     focusOffset = temp
+    //   }
+    //   const beforeStr = this.fileText.slice(0, anchorOffset)
+    //   const str = `<span style="background: red">${this.selectText}</span>`
+    //   const afterStr = this.fileText.slice(focusOffset)
+    //   newFileText = beforeStr + str + afterStr
+    //   this.fileText = newFileText
+    //   console.log(anchorOffset, focusOffset, selection, window.getSelection(), 9999999999)
+    //   // this.$refs.textContent.click()
+    // },
     handleUpdate (tag) {
+      // 清除页面中现有的高亮
+      this.highlighter.removeAll()
+      this.editWord = true
       this.type = tag
     }
   }

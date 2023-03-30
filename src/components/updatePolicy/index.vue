@@ -110,11 +110,20 @@
                 v-model="ruleForm1.background"
               ></el-input>
               <el-button
+                v-if="ruleForm1.background"
                 style="white-space: nowrap"
                 class="ml-16"
                 type="primary"
-                :disabled="!!ruleForm1.background"
-                >{{ruleForm1.background?'已标选': '请标选'}}</el-button
+                disabled
+                >'已标选</el-button
+              >
+              <el-button
+              v-if="!ruleForm1.background"
+               @click="toMark"
+                style="white-space: nowrap"
+                class="ml-16"
+                type="primary"
+                >请标选</el-button
               >
             </div>
           </el-form-item>
@@ -126,12 +135,21 @@
                 v-model="ruleForm1.subjectContent"
               ></el-input>
               <el-button
+               v-if="ruleForm1.subjectContent"
                 style="white-space: nowrap"
                 class="ml-16"
                 type="primary"
-                :disabled="!!ruleForm1.subjectContent"
-                >{{ruleForm1.subjectContent?'已标选': '请标选'}}</el-button
+                disabled
+                >已标选</el-button
               >
+              <el-button
+              @click="toMark"
+              v-if="!ruleForm1.subjectContent"
+               style="white-space: nowrap"
+               class="ml-16"
+               type="primary"
+               >请标选</el-button
+             >
             </div>
           </el-form-item>
           <el-form-item label="保护措施:" prop="safeguardMeasure">
@@ -142,12 +160,21 @@
                 v-model="ruleForm1.safeguardMeasure"
               ></el-input>
               <el-button
+              v-if="ruleForm1.safeguardMeasure"
               style="white-space: nowrap"
               class="ml-16"
               type="primary"
-              :disabled="!!ruleForm1.safeguardMeasure"
-              >{{ruleForm1.safeguardMeasure?'已标选': '请标选'}}</el-button
+              disabled
+              >已标选</el-button
             >
+            <el-button
+            @click="toMark"
+            v-if="!ruleForm1.safeguardMeasure"
+            style="white-space: nowrap"
+            class="ml-16"
+            type="primary"
+            >请标选</el-button
+          >
             </div>
           </el-form-item>
           <el-form-item label="附件:" prop="attachmentFileName">
@@ -179,6 +206,8 @@
 </template>
 <script>
 import './index.scss'
+import { updatePolicyData } from '@/api/policy/data-list'
+
 export default {
   components: {},
   props: {
@@ -203,10 +232,45 @@ export default {
     }
   },
   methods: {
-    confirmSubmit () {},
+    confirmSubmit () {
+      this.$refs.ruleForm1.validate((valid) => {
+        // 验证通过
+        if (valid) {
+          this.$confirm('您确定提交吗?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          })
+            .then(() => {
+              updatePolicyData(this.ruleForm1).then(res => {
+                if (res.code === 200) {
+                  this.msgSuccess('保存成功')
+                  this.$emit('initList')
+                } else {
+                  this.msgError('保存失败' + res.code)
+                }
+              })
+            })
+            .catch(() => {
+              this.$message({
+                type: 'info',
+                message: '已取消'
+              })
+            })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
     // 关闭弹框
     closePanel () {
       this.$emit('closeModal')
+    },
+    toMark () {
+      this.$router.push({
+        path: '/policy/manage/policyDetail/' + this.policyData.policyFileId
+      })
     }
   }
 }

@@ -60,7 +60,7 @@
             <el-button type="primary" @click="uploadFiles">文件上传</el-button>
             <template v-if="multipleSelection?.length">
               <el-button type="primary">数据清洗</el-button>
-              <el-button type="primary" @click.native="handleUpdateWords(multipleSelection[0])">更新高频词</el-button>
+              <el-button type="primary" @click.native="handleUpdateWords">更新高频词</el-button>
               <el-button type="primary" @click.native="compareText">文本对比</el-button>
               <el-button type="primary">行文结构合并</el-button>
               <el-button type="primary">整篇文章合并</el-button>
@@ -175,11 +175,12 @@
     ></pagination>
     </div>
     <uploadFiles
+       v-if="showUploadPanel"
       :showPanel="showUploadPanel"
       @initList="initList"
       @closeModal="showUploadPanel = false"
     />
-    <updatePolicy :policyData="policyData" :showPanel="showUpdatePanel"   @closeModal="showUpdatePanel = false"/>
+    <updatePolicy  @initList="initList" :policyData="policyData" :showPanel="showUpdatePanel"   @closeModal="showUpdatePanel = false"/>
   </div>
 </template>
 <script>
@@ -189,7 +190,7 @@ import BreadCrumbs from '@/components/breadCrumbs.vue'
 import deeSearch from '@/components/deepSearch'
 import uploadFiles from '@/components/uploadFiles'
 import updatePolicy from '@/components/updatePolicy'
-import { getPolicyDataList, getPolicyData, getPolicyDetailData, dataClear } from '@/api/policy/data-list'
+import { getPolicyDataList, getPolicyData, getPolicyDetailData, dataClear, deleteData } from '@/api/policy/data-list'
 export default {
   components: {
     BreadCrumbs,
@@ -233,6 +234,7 @@ export default {
     },
     // 更新高频词
     handleUpdateWords (data) {
+      console.log(this.multipleSelection, 'fffffffff')
       this.loading = true
       window.setTimeout(() => {
         this.loading = false
@@ -242,9 +244,9 @@ export default {
     },
     // 查看
     viewDetail (data) {
-      console.log(data, 'aaaaa')
       this.$router.push({
-        path: '/policy/manage/policyDetail/' + data.policyFileId
+        path: '/policy/manage/policyDetail/' + data.policyFileId,
+        query: { isView: 1 }
       })
     },
     // 数据清洗
@@ -263,13 +265,12 @@ export default {
       })
         .then(() => {
           this.initList()
-          this.msgSuccess('删除成功')
-          // deleteData(data.policyDataId).then((res) => {
-          //   if (res.code === 200) {
-          //     this.msgSuccess('删除成功')
-          //     this.handleQuery()
-          //   }
-          // })
+          deleteData(data.policyDataId).then((res) => {
+            if (res.code === 200) {
+              this.msgSuccess('删除成功')
+              this.handleQuery()
+            }
+          })
         })
         .catch(() => {
           this.msgInfo('已取消删除')

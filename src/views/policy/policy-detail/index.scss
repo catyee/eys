@@ -27,22 +27,34 @@
             background: #FAFAFA;
             height: 100%;
             padding: 16px;
-            white-space: nowrap;
+            white-space: pre-wrap;
+            line-height: 22px;
+            padding-bottom: 20px;
         }
         .right{
             margin-left: 10px;
             width: 30%;
             background: #fff;
             padding: 16px;
+            overflow: scroll;
+            padding-bottom: 20px;
+            
             .item{
                 padding: 16px;
                 background: #FAFAFA;
                 margin-bottom: 16px;
                 .text-content{
-                    min-height: 120px;
+                    cursor: pointer;
+                    min-height: 60px;
                     padding: 16px;
                     margin-top: 10px;
+                    line-height: 23px;
                     background-color: #fff;
+                    border: 1px solid #fff;
+                    &.active{
+                        border-color: #fca130;
+                        background-color: rgba(252,161,48,.1);
+                    }
                 }
             }
         }
