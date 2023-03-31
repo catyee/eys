@@ -9,7 +9,7 @@
         <el-button type="primary" @click="handleSave" v-if="!isViewMode"> 确认 </el-button>
       </div>
       <div class="content">
-        <div class="left" id="textContent" v-html="fileText"></div>
+        <div class="left" id="textContent" >{{fileText}}</div>
         <div class="right">
           <div class="word item">
             <div class="title">文本高频词：</div>
@@ -106,6 +106,7 @@ import './index.scss'
 import BreadCrumbs from '@/components/breadCrumbs.vue'
 import Highlighter from 'web-highlighter'
 import { getPolicyDetailData, updateFileData } from '@/api/policy/data-list'
+import { deepClone } from '@/utils/utils'
 
 export default {
   components: {
@@ -130,6 +131,7 @@ export default {
       originFileData: {},
       // 需要编辑的数据
       fileMarks: {
+        policyFileId: null,
         background: {},
         subjectContent: {},
         safeguardMeasure: {},
@@ -224,14 +226,22 @@ export default {
     // 点击保存
     handleSave () {
       this.editWord = false
+      console.log(this.fileMarks, 'kkkkkkkk')
       this.$confirm('您确定要保存吗?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       })
         .then(() => {
-          // const data = Object.assign(this.originFileData, this.fileMarks)
-          updateFileData(this.fileMarks).then((res) => {
+          this.fileMarks.backgroundContent = this.fileMarks.background ? this.fileMarks.background.text : null
+          this.fileMarks.subjectContentContent = this.fileMarks.subjectContent ? this.fileMarks.subjectContent.text : null
+          this.fileMarks.safeguardMeasureContent = this.fileMarks.safeguardMeasure ? this.fileMarks.safeguardMeasure.text : null
+          var param = deepClone(this.fileMarks)
+          param.background = param.background ? JSON.stringify(param.background) : param.background
+          param.subjectContent = param.subjectContent ? JSON.stringify(param.subjectContent) : param.subjectContent
+          param.safeguardMeasure = param.safeguardMeasure ? JSON.stringify(param.safeguardMeasure) : param.safeguardMeasure
+          console.log(param, 'mmmmmm')
+          updateFileData(param).then((res) => {
             if (res.code === 200) {
               this.msgSuccess('保存成功')
             } else {
@@ -284,47 +294,18 @@ export default {
           this.originFileData = data
           this.fileText = data.cleanedContent
           this.fileMarks = {
-            background: data.background || {},
-            subjectContent: data.subjectContent || {},
-            safeguardMeasure: data.safeguardMeasure || {},
-
+            policyFileId: data.policyFileId,
+            background: data.background ? JSON.parse(data.background) : {},
+            subjectContent: data.subjectContent ? JSON.parse(data.subjectContent) : {},
+            safeguardMeasure: data.safeguardMeasure ? JSON.parse(data.safeguardMeasure) : {},
             attachmentUrl: data.attachmentUrl,
             attachmentFileName: data.attachmentFileName,
             frequentWord: data.frequentWord
           }
+          console.log(this.fileMarks, 'lllllll')
         }
       })
     },
-    // getSelection () {
-    //   let newFileText = ''
-    //   this.fileText = this.fileText.toString()
-    //   this.fileText = this.fileText.replace(
-    //     '<span style="background: red">',
-    //     ''
-    //   )
-    //   this.fileText = this.fileText.replace('</span>', '')
-    //   console.log(this.fileText, ' this.fileText this.fileText this.fileText')
-
-    //   const selObj = window.getSelection()
-    //   const selection = selObj.getRangeAt(0)
-    //   // 选中的文字
-    //   this.selectText = selection.toString()
-    //   let anchorOffset = window.getSelection().anchorOffset
-    //   let focusOffset = window.getSelection().focusOffset
-    //   let temp
-    //   if (anchorOffset > focusOffset) {
-    //     temp = anchorOffset
-    //     anchorOffset = focusOffset
-    //     focusOffset = temp
-    //   }
-    //   const beforeStr = this.fileText.slice(0, anchorOffset)
-    //   const str = `<span style="background: red">${this.selectText}</span>`
-    //   const afterStr = this.fileText.slice(focusOffset)
-    //   newFileText = beforeStr + str + afterStr
-    //   this.fileText = newFileText
-    //   console.log(anchorOffset, focusOffset, selection, window.getSelection(), 9999999999)
-    //   // this.$refs.textContent.click()
-    // },
     handleUpdate (tag) {
       // 清除页面中现有的高亮
       this.highlighter.removeAll()

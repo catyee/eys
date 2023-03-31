@@ -102,23 +102,23 @@
             </el-date-picker>
           </el-form-item>
           <div class="title pb-30 pt-10">政策结构：</div>
-          <el-form-item label="背景:" prop="background">
+          <el-form-item label="背景:" prop="backgroundContent">
             <div class="flex" style="box-sizing: border-box">
               <el-input
               readonly
                 placeholder=""
-                v-model="ruleForm1.background"
+                v-model="ruleForm1.backgroundContent"
               ></el-input>
               <el-button
-                v-if="ruleForm1.background"
+                v-if="ruleForm1.backgroundContent"
                 style="white-space: nowrap"
                 class="ml-16"
                 type="primary"
                 disabled
-                >'已标选</el-button
+                >已标选</el-button
               >
               <el-button
-              v-if="!ruleForm1.background"
+              v-if="!ruleForm1.backgroundContent"
                @click="toMark"
                 style="white-space: nowrap"
                 class="ml-16"
@@ -127,15 +127,15 @@
               >
             </div>
           </el-form-item>
-          <el-form-item label="主题内容:" prop="subjectContent">
+          <el-form-item label="主题内容:" prop="subjectContentContent">
             <div class="flex">
               <el-input
               readonly
                 placeholder=""
-                v-model="ruleForm1.subjectContent"
+                v-model="ruleForm1.subjectContentContent"
               ></el-input>
               <el-button
-               v-if="ruleForm1.subjectContent"
+               v-if="ruleForm1.subjectContentContent"
                 style="white-space: nowrap"
                 class="ml-16"
                 type="primary"
@@ -144,7 +144,7 @@
               >
               <el-button
               @click="toMark"
-              v-if="!ruleForm1.subjectContent"
+              v-if="!ruleForm1.subjectContentContent"
                style="white-space: nowrap"
                class="ml-16"
                type="primary"
@@ -152,15 +152,15 @@
              >
             </div>
           </el-form-item>
-          <el-form-item label="保护措施:" prop="safeguardMeasure">
+          <el-form-item label="保护措施:" prop="safeguardMeasureContent">
             <div class="flex">
               <el-input
               readonly
                 placeholder=""
-                v-model="ruleForm1.safeguardMeasure"
+                v-model="ruleForm1.safeguardMeasureContent"
               ></el-input>
               <el-button
-              v-if="ruleForm1.safeguardMeasure"
+              v-if="ruleForm1.safeguardMeasureContent"
               style="white-space: nowrap"
               class="ml-16"
               type="primary"
@@ -169,7 +169,7 @@
             >
             <el-button
             @click="toMark"
-            v-if="!ruleForm1.safeguardMeasure"
+            v-if="!ruleForm1.safeguardMeasureContent"
             style="white-space: nowrap"
             class="ml-16"
             type="primary"

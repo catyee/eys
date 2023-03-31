@@ -96,7 +96,7 @@
     } else if (width / dpr < 1200) { // 小于900px以后的宽度 修改地方2！！！
       width = 1200 * dpr
     }
-    var rem = width / 12// 将屏幕分成多少分    修改地方3！！！
+    var rem = width / 9.5// 将屏幕分成多少分    修改地方3！！！
     docEl.style.fontSize = rem + 'px'
   }
 

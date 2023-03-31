@@ -43,9 +43,7 @@ export function updateFileData (data) {
   return request({
     url: '/eys/file/',
     method: 'put',
-    data: {
-      policyFile: data
-    }
+    data
   })
 }
 // 修改数据
@@ -53,9 +51,7 @@ export function updatePolicyData (data) {
   return request({
     url: '/eys/data/',
     method: 'put',
-    data: {
-      policyData: data
-    }
+    data: data
   })
 }
 
@@ -64,8 +60,6 @@ export function updateWords (data) {
   return request({
     url: '/eys/data/',
     method: 'put',
-    data: {
-      policyData: data
-    }
+    data: data
   })
 }
