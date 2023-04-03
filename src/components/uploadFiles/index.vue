@@ -26,7 +26,7 @@
             v-model="fileUrl"
             placeholder=""
           ></el-input> -->
-          <upload @getList="getList"  ref="uploadFile" v-if="fileNum === 1" uploadFileRef="upload1" uploadNum="file" />
+          <upload @closePanel="closePanel" @updateData="updateData" @getList="getList"  ref="uploadFile" v-if="fileNum === 1" uploadFileRef="upload1" uploadNum="file" />
         </div>
         <div style="display: flex; align-items: baseline" class="mt-20">
           <el-radio v-model="fileNum" :label="2">多个上传</el-radio>
@@ -36,7 +36,7 @@
             style="width: 350px"
             placeholder=""
           ></el-input> -->
-          <upload @getList="getList"  ref="uploadFolder" uploadFileRef="upload2" uploadNum="folder"   v-if="fileNum === 2" />
+          <upload @closePanel="closePanel"  @updateData="updateData" @getList="getList"  ref="uploadFolder" uploadFileRef="upload2" uploadNum="folder"   v-if="fileNum === 2" />
         </div>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -72,33 +72,15 @@ export default {
     }
   },
   methods: {
-    beforeUpload (file) {
-      // 上传到服务器之前 禁止再次上传
-      this.enableUpload = false
-      console.log(file, 'fileeeee')
-      //   const types = ['image/jpeg', 'image/jpg', 'image/png']
-
-      //   if (types.indexOf(file.type) === -1) {
-      //     this.msgError('请上传正确的格式')
-      //     // 允许再次上传
-      //     this.enableUpload = true
-      //     return false
-      //   }
-      //   // 视频长度不大于20M
-      //   if (file.size > 209715200) {
-      //     this.msgError('文件过大')
-      //     // 允许再次上传
-      //     this.enableUpload = true
-      //     return false
-      //   }
-    },
-    // // 进度条
     // 关闭弹框
     closePanel () {
       this.$emit('closeModal')
     },
     getList () {
       this.$emit('initList')
+    },
+    updateData (data) {
+      this.$emit('updateData', data)
     },
     // 提交签名页照片
     submit () {

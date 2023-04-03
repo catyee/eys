@@ -38,18 +38,19 @@
         </div>
         <div class="selector-item">
           <span class="pr-10">数据清洗:</span>
-          <el-radio-group v-model="queryParams.searchValue">
-            <el-radio :label="3">全部</el-radio>
-            <el-radio :label="6">已清洗</el-radio>
-            <el-radio :label="9">未清洗</el-radio>
+          <el-radio-group v-model="queryParams.status" @change="initList">
+            <el-radio :label="-1">全部</el-radio>
+            <el-radio :label="1">已清洗</el-radio>
+            <el-radio :label="0">未清洗</el-radio>
           </el-radio-group>
         </div>
         <div class="selector-item">
           <span class="pr-10">行文结构:</span>
-          <el-radio-group v-model="queryParams.searchValue">
-            <el-radio :label="3">全部</el-radio>
-            <el-radio :label="6">已标注</el-radio>
-            <el-radio :label="9">未标注</el-radio>
+          <el-radio-group v-model="queryParams.writingStructure" @change="initList">
+            <el-radio :label="-1">全部</el-radio>
+            <el-radio :label="1">已标注</el-radio>
+            <el-radio :label="0">未标注</el-radio>
+            <el-radio :label="2">不完全标注</el-radio>
           </el-radio-group>
         </div>
       </div>
@@ -59,10 +60,16 @@
           <div>
             <el-button type="primary" @click="uploadFiles">文件上传</el-button>
             <template v-if="multipleSelection?.length">
-              <el-button type="primary">数据清洗</el-button>
-              <el-button type="primary" @click.native="handleUpdateWords">更新高频词</el-button>
-              <el-button type="primary" @click.native="compareText">文本对比</el-button>
-              <el-button type="primary">行文结构合并</el-button>
+              <el-button type="primary" @click="handleDataClear(null)"
+                >数据清洗</el-button
+              >
+              <el-button type="primary" @click.native="handleUpdateWords(null)"
+                >更新高频词</el-button
+              >
+              <el-button type="primary" @click.native="compareText"
+                >文本对比</el-button
+              >
+              <el-button type="primary" @click="handleStructMerge">行文结构合并</el-button>
               <el-button type="primary">整篇文章合并</el-button>
             </template>
           </div>
@@ -105,6 +112,16 @@
             label="清洗确认状态"
             show-overflow-tooltip
           >
+            <template slot-scope="scope">
+              <div v-if="scope.row.status != 1" class="dot-item">
+                <div class="dot-red"></div>
+                未确认
+              </div>
+              <div v-if="scope.row.status === 1" class="dot-item">
+                <div class="dot-green"></div>
+                已确认
+              </div>
+            </template>
           </el-table-column>
           <el-table-column
             prop="publicationNumber"
@@ -129,10 +146,15 @@
             label="行文结构"
             show-overflow-tooltip
           >
+            <template slot-scope="scope">
+              <el-tag type="success" v-if="scope.row.writingStructure === 1">已标注</el-tag>
+              <el-tag type="danger" v-if="scope.row.writingStructure === 2">不完全标注</el-tag>
+              <el-tag type="info" v-if="!scope.row.writingStructure">未标注</el-tag>
+
+            </template>
           </el-table-column>
           <el-table-column label="操作">
             <template slot-scope="scope">
-
               <el-dropdown>
                 <el-button type="primary">
                   全部操作<i class="el-icon-arrow-down el-icon--right"></i>
@@ -141,23 +163,24 @@
                   <el-dropdown-item @click.native="viewDetail(scope.row)">
                     <span class="active-color"> 查看 </span>
                   </el-dropdown-item>
-                  <el-dropdown-item  @click.native="handleDelete(scope.row)">
+                  <el-dropdown-item @click.native="handleDelete(scope.row)">
                     <span class="active-color">删除</span>
                   </el-dropdown-item>
-                  <el-dropdown-item  @click.native="updateData(scope.row)">
-                    <span
-                      class="active-color"
-                      >修改</span
-                    >
+                  <el-dropdown-item @click.native="updateData(scope.row)">
+                    <span class="active-color">修改</span>
                   </el-dropdown-item>
-                  <el-dropdown-item @click.native="handleDataClear(scope.row.policyFileId)">
+                  <el-dropdown-item
+                    v-if="!scope.row.status"
+                    @click.native="handleDataClear(scope.row.policyFileId)"
+                  >
                     <span class="active-color">数据清洗</span>
                   </el-dropdown-item>
                   <!-- <el-dropdown-item>
                     <span class="active-color">清洗确认</span></el-dropdown-item
                   > -->
                   <el-dropdown-item
-                   @click.native="handleUpdateWords(scope.row)">
+                    @click.native="handleUpdateWords(scope.row.policyFileId)"
+                  >
                     <span class="active-color"
                       >更新高频词</span
                     ></el-dropdown-item
@@ -169,18 +192,24 @@
         </el-table>
       </div>
       <pagination
-      :total="total"
-      :queryParams="queryParams"
-      @initList="initList"
-    ></pagination>
+        :total="total"
+        :queryParams="queryParams"
+        @initList="initList"
+      ></pagination>
     </div>
     <uploadFiles
-       v-if="showUploadPanel"
+      v-if="showUploadPanel"
       :showPanel="showUploadPanel"
       @initList="initList"
+      @updateData="updateData"
       @closeModal="showUploadPanel = false"
     />
-    <updatePolicy  @initList="initList" :policyData="policyData" :showPanel="showUpdatePanel"   @closeModal="showUpdatePanel = false"/>
+    <updatePolicy
+      @initList="initList"
+      :policyData="policyData"
+      :showPanel="showUpdatePanel"
+      @closeModal="showUpdatePanel = false"
+    />
   </div>
 </template>
 <script>
@@ -190,7 +219,15 @@ import BreadCrumbs from '@/components/breadCrumbs.vue'
 import deeSearch from '@/components/deepSearch'
 import uploadFiles from '@/components/uploadFiles'
 import updatePolicy from '@/components/updatePolicy'
-import { getPolicyDataList, getPolicyData, getPolicyDetailData, dataClear, deleteData } from '@/api/policy/data-list'
+import { deepClone } from '@/utils/utils.js'
+import {
+  getPolicyDataList,
+  getPolicyData,
+  getPolicyDetailData,
+  dataClear,
+  deleteData,
+  structMerge
+} from '@/api/policy/data-list'
 export default {
   components: {
     BreadCrumbs,
@@ -211,10 +248,12 @@ export default {
       // 选中的列表
       selectedRows: [],
       queryParams: {
+        status: -1,
+        writingStructure: -1,
         // 页数
         pageNum: 1,
         // 每页的大小
-        pageSize: 20,
+        pageSize: 10,
         // 查询关键字
         searchValue: null
       },
@@ -230,11 +269,18 @@ export default {
   methods: {
     // 文本对比
     compareText () {
-      this.$router.push({ path: '/policy/analyze/text-contrast' })
+      if (this.selectedRows.length !== 2) {
+        this.msgError('请选择两条数据')
+        return
+      }
+      const ids = this.selectedRows.join(',')
+      this.$router.push({ path: '/policy/analyze/text-contrast', query: { ids: ids } })
     },
     // 更新高频词
-    handleUpdateWords (data) {
-      console.log(this.multipleSelection, 'fffffffff')
+    handleUpdateWords (ids) {
+      if (!ids) {
+        ids = this.selectedRows.join(',')
+      }
       this.loading = true
       window.setTimeout(() => {
         this.loading = false
@@ -251,13 +297,21 @@ export default {
     },
     // 数据清洗
     handleDataClear (ids) {
-      dataClear(ids).then(res => {
-
+      console.log(ids, 'sssssss')
+      if (!ids) {
+        ids = this.selectedRows.join(',')
+      }
+      dataClear(ids).then((res) => {
+        if (res.code === 200) {
+          this.msgSuccess('清洗成功')
+          this.initList()
+        } else {
+          this.msgError('清洗失败')
+        }
       })
     },
     // 删除
     handleDelete (data) {
-      console.log(3333333)
       this.$confirm('此操作将永久删除, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -278,18 +332,17 @@ export default {
     },
     // 更新政策信息
     updateData (data) {
-      getPolicyData(data.policyDataId).then(res => {
+      getPolicyData(data.policyDataId).then((res) => {
         if (res.code === 200) {
           this.showUpdatePanel = true
           const data1 = res.data
-          getPolicyDetailData(data.policyFileId).then(res => {
+          getPolicyDetailData(data.policyFileId).then((res) => {
             if (res.code === 200) {
               const data2 = res.data
               this.policyData = Object.assign(data1, data2)
             }
           })
         } else {
-
         }
       })
     },
@@ -300,7 +353,14 @@ export default {
     },
     // 获取列表
     initList () {
-      getPolicyDataList(this.queryParams).then((res) => {
+      const data = deepClone(this.queryParams)
+      if (data.status === -1) {
+        delete data.status
+      }
+      if (data.writingStructure === -1) {
+        delete data.writingStructure
+      }
+      getPolicyDataList(data).then((res) => {
         this.list = res.rows
         this.total = parseInt(res.total)
       })
@@ -311,14 +371,14 @@ export default {
     },
     // 选中一行表格
     handleSelectionChange (val) {
-      this.selectedRows = val.map((item) => item.policyDataId)
+      this.selectedRows = val.map((item) => item.policyFileId)
       this.multipleSelection = val
     },
     // 设置选中表格行颜色
     rowStyle ({ row }) {
       var arr = this.selectedRows
       for (let i = 0; i < arr.length; i++) {
-        if (row.policyDataId === arr[i]) {
+        if (row.policyFileId === arr[i]) {
           return 'rowStyle'
         }
       }
@@ -326,6 +386,13 @@ export default {
     // 取消选择
     cancelTableSelect () {
       this.$refs.multipleTable.clearSelection()
+    },
+    // 行文结构合并下载
+    handleStructMerge () {
+      const ids = this.selectedRows.join(',')
+      structMerge(ids).then(res => {
+        console.log(res, 'sssssssss')
+      })
     }
   }
 }

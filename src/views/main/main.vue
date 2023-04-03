@@ -42,7 +42,7 @@ export default {
   box-sizing: border-box;
   background-color: $body-deep-color;
   //overflow-y: hidden;
-  overflow: hidden;
+  overflow: auto;
   padding-left: 24px;
 }
 </style>

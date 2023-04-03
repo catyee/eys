@@ -22,7 +22,7 @@
         <el-progress
           color="#52C41A"
           :format="formatContrast"
-          :percentage="50"
+          :percentage="similar"
         ></el-progress>
       </div>
       <div class="contrast-content">
@@ -57,64 +57,39 @@
 <script>
 import './index.scss'
 import BreadCrumbs from '@/components/breadCrumbs.vue'
+import { compareText } from '@/api/policy/data-list'
+
 export default {
   components: {
     BreadCrumbs
   },
   data () {
     return {
-      selectedRows: [],
-      queryParams: {
-        // 页数
-        pageNum: 1,
-        // 每页的大小
-        pageSize: 20,
-        // 查询关键字
-        searchValue: null
-      },
-      list: [
-        {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-06',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-07',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }
-      ],
-      multipleSelection: []
+      // 相似度
+      similar: 0,
+      ids: null
     }
+  },
+  created () {
+    this.ids = this.$route.query.ids
+    console.log(this.ids, 'ssssssss')
+  },
+  mounted () {
+    this.getCompareData()
   },
   methods: {
     formatContrast (percentage) {
       return `相似度${percentage}%`
+    },
+    // 获取对比数据
+    getCompareData () {
+      compareText(this.ids).then(res => {
+        if (res.code === 200) {
+          this.similar = res.similar ? Number((parseInt(res.similar * 100 * 100) / 100).toFixed(2)) : 0
+        } else {
+
+        }
+      })
     }
   }
 }

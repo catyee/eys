@@ -110,11 +110,12 @@
                 v-model="ruleForm1.backgroundContent"
               ></el-input>
               <el-button
+               @click="toMark"
                 v-if="ruleForm1.backgroundContent"
                 style="white-space: nowrap"
                 class="ml-16"
                 type="primary"
-                disabled
+
                 >已标选</el-button
               >
               <el-button
@@ -139,7 +140,7 @@
                 style="white-space: nowrap"
                 class="ml-16"
                 type="primary"
-                disabled
+                @click="toMark"
                 >已标选</el-button
               >
               <el-button
@@ -164,7 +165,7 @@
               style="white-space: nowrap"
               class="ml-16"
               type="primary"
-              disabled
+              @click="toMark"
               >已标选</el-button
             >
             <el-button
@@ -184,13 +185,12 @@
                 readonly
                 v-model="ruleForm1.attachmentFileName"
               ></el-input>
-              <el-button
+              <!-- <el-button
                 style="white-space: nowrap"
                 class="ml-16"
                 type="primary"
-                :disabled="!!ruleForm1.attachmentFileName"
                 >{{ruleForm1.attachmentFileName?'已标选': '请标选'}}</el-button
-              >
+              > -->
             </div>
           </el-form-item>
         </el-form>

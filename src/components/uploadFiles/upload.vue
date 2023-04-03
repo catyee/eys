@@ -67,7 +67,7 @@ export default {
       // 文件的本机路径
       fileUrl: '',
       uploadHeaders: { Authorization: 'Bearer ' + getToken() },
-      uploadUrl: process.env.VUE_APP_BASE_API + '/eys/text/batch/upload',
+      uploadUrl: process.env.VUE_APP_BASE_API + '/eys/text/upload',
       // 是否允许上传
       enableUpload: true
     }
@@ -151,6 +151,11 @@ export default {
         // this.signUrl = res.url
         this.msgSuccess('上传成功')
         this.$emit('getList')
+        if (this.uploadNum === 'file') {
+          console.log(555555555)
+          this.$emit('updateData', res.PolicyData)
+          this.closePanel()
+        }
       } else {
         this.msgError('上传失败')
         const uid = file.uid
@@ -163,7 +168,7 @@ export default {
     },
     // 关闭弹框
     closePanel () {
-      this.$emit('closeModal')
+      this.$emit('closePanel')
     }
   }
 }

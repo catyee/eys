@@ -63,3 +63,33 @@ export function updateWords (data) {
     data: data
   })
 }
+// 文本对比
+export function compareText (data) {
+  return request({
+    url: '/eys/text',
+    method: 'post',
+    params: {
+      ids: data
+    }
+  })
+}
+// 行文结构合并下载
+export function structMerge (data) {
+  return request({
+    url: '/eys/text/struct/merge',
+    method: 'get',
+    params: {
+      ids: data
+    }
+  })
+}
+// 整篇文章合并下载
+export function alltMerge (data) {
+  return request({
+    url: '/eys/text/all/merge',
+    method: 'get',
+    params: {
+      ids: data
+    }
+  })
+}
