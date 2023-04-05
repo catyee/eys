@@ -152,3 +152,13 @@ export function _throttle (fn, interval) {
     }
   }
 }
+export function getStrNum (str, target) {
+  if (!str) return 0
+  let index = str.indexOf(target)
+  let sum = 0
+  while (index > -1) {
+    index = str.indexOf(target, index + 1)
+    sum++
+  }
+  return sum
+}

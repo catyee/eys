@@ -58,9 +58,11 @@ export function updatePolicyData (data) {
 // 更新高频词
 export function updateWords (data) {
   return request({
-    url: '/eys/data/',
+    url: '/eys/text/updateHighWord',
     method: 'put',
-    data: data
+    params: {
+      ids: data
+    }
   })
 }
 // 文本对比

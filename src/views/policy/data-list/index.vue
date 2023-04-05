@@ -28,7 +28,7 @@
                 trigger="click"
                 :visible-arrow="false"
               >
-                <deeSearch />
+                <deepSearch />
                 <span class="deep-search" slot="reference">二级检索</span>
               </el-popover>
 
@@ -216,7 +216,7 @@
 import './index.scss'
 import pagination from '@/components/pagination.vue'
 import BreadCrumbs from '@/components/breadCrumbs.vue'
-import deeSearch from '@/components/deepSearch'
+import deepSearch from '@/components/deepSearch'
 import uploadFiles from '@/components/uploadFiles'
 import updatePolicy from '@/components/updatePolicy'
 import { deepClone } from '@/utils/utils.js'
@@ -226,12 +226,14 @@ import {
   getPolicyDetailData,
   dataClear,
   deleteData,
-  structMerge
+  structMerge,
+  updateWords
+
 } from '@/api/policy/data-list'
 export default {
   components: {
     BreadCrumbs,
-    deeSearch,
+    deepSearch,
     uploadFiles,
     pagination,
     updatePolicy
@@ -282,11 +284,15 @@ export default {
         ids = this.selectedRows.join(',')
       }
       this.loading = true
-      window.setTimeout(() => {
+      updateWords(ids).then(res => {
         this.loading = false
-        this.msgSuccess('更新成功')
-        this.initList()
-      }, 2000)
+        if (res.code === 200) {
+          this.msgSuccess('更新成功')
+          this.initList()
+        } else {
+          this.msgError('更新失败' + res.code)
+        }
+      })
     },
     // 查看
     viewDetail (data) {

@@ -30,6 +30,7 @@
             white-space: pre-wrap;
             line-height: 22px;
             padding-bottom: 20px;
+            cursor: pointer;
         }
         .right{
             margin-left: 10px;
@@ -38,6 +39,10 @@
             padding: 16px;
             overflow: scroll;
             padding-bottom: 20px;
+            .chart{
+                height: 200PX;
+                // width: 100%;
+            }
             
             .item{
                 padding: 16px;

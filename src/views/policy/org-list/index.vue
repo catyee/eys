@@ -25,7 +25,7 @@
             class="width"
           >
           </el-input>
-          <el-button class="ml-16" type="primary">查询</el-button>
+          <el-button class="ml-16" type="primary" @click="initList">查询</el-button>
         </div>
       </div>
       <div class="list-container">

@@ -13,8 +13,13 @@
         <div class="right">
           <div class="word item">
             <div class="title">文本高频词：</div>
-            <div class="mt-16 mb-16 defaultColor">{{fileMarks.frequentWord}}</div>
-            <div class="chart"></div>
+            <div style="display:flex;algin-items:center;cursor:pointer;">
+              <div class="mt-16 mb-16  mr-16"
+              :class="{'defaultColor':currentFrequentWord === key}"
+              @click="handleFrequentWordChange(key)"
+               v-for="(val,key,index) in fileMarks.frequentWord" :key="index">{{key}}:{{val}}次</div>
+            </div>
+            <div class="chart" id="chart"></div>
           </div>
           <div class="item">
             <div class="top-oper">
@@ -106,7 +111,8 @@ import './index.scss'
 import BreadCrumbs from '@/components/breadCrumbs.vue'
 import Highlighter from 'web-highlighter'
 import { getPolicyDetailData, updateFileData } from '@/api/policy/data-list'
-import { deepClone } from '@/utils/utils'
+import { deepClone, getStrNum } from '@/utils/utils'
+import * as echarts from 'echarts'
 
 export default {
   components: {
@@ -114,6 +120,9 @@ export default {
   },
   data () {
     return {
+      echarts: null,
+      // 当前选中的高频词
+      currentFrequentWord: null,
       breadItems: [],
       // 是否是查看模式
       isViewMode: true,
@@ -163,7 +172,14 @@ export default {
       } else {
         this.highlighter.run()
       }
+    },
+    fileMarks: {
+      handler (v) {
+        this.getChartData(v)
+      },
+      deep: true
     }
+
   },
   created () {
     this.policyFileId = this.$route.params.id
@@ -202,6 +218,8 @@ export default {
   },
 
   mounted () {
+    var chartDom = document.getElementById('chart')
+    this.echarts = echarts.init(chartDom)
     this.getFileData()
     this.highlighter = new Highlighter({
       $root: document.getElementById('textContent')
@@ -226,7 +244,6 @@ export default {
     // 点击保存
     handleSave () {
       this.editWord = false
-      console.log(this.fileMarks, 'kkkkkkkk')
       this.$confirm('您确定要保存吗?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -293,16 +310,41 @@ export default {
           const data = res.data
           this.originFileData = data
           this.fileText = data.cleanedContent
+          let background = {}; let subjectContent = {}; let safeguardMeasure = {}
+          if (data.background) {
+            try {
+              background = JSON.parse(data.background)
+            } catch (e) {
+              background = {}
+            }
+          }
+          if (data.subjectContent) {
+            try {
+              subjectContent = JSON.parse(data.subjectContent)
+            } catch (e) {
+              subjectContent = {}
+            }
+          }
+          if (data.safeguardMeasure) {
+            try {
+              safeguardMeasure = JSON.parse(data.safeguardMeasure)
+            } catch (e) {
+              safeguardMeasure = {}
+            }
+          }
           this.fileMarks = {
             policyFileId: data.policyFileId,
-            background: data.background ? JSON.parse(data.background) : {},
-            subjectContent: data.subjectContent ? JSON.parse(data.subjectContent) : {},
-            safeguardMeasure: data.safeguardMeasure ? JSON.parse(data.safeguardMeasure) : {},
+            background: background,
+            subjectContent: subjectContent,
+            safeguardMeasure: safeguardMeasure,
             attachmentUrl: data.attachmentUrl,
             attachmentFileName: data.attachmentFileName,
-            frequentWord: data.frequentWord
+            frequentWord: data.frequentWord ? JSON.parse(data.frequentWord) : {}
           }
-          console.log(this.fileMarks, 'lllllll')
+          if (data.frequentWord) {
+            this.currentFrequentWord = Object.keys(JSON.parse(data.frequentWord))[0]
+            this.handleChart()
+          }
         }
       })
     },
@@ -311,6 +353,69 @@ export default {
       this.highlighter.removeAll()
       this.editWord = true
       this.type = tag
+    },
+    // 点击高频词显示对应的图表
+    handleFrequentWordChange (key) {
+      this.currentFrequentWord = key
+      this.getChartData(this.fileMarks)
+    },
+    // 获取图表数据 背景，主题被人，保护措施，附件高频词数量
+    getChartData (fileMarks) {
+      const word = this.currentFrequentWord
+      const wordFile = fileMarks.frequentWord[word]
+      const wordBackground = getStrNum(fileMarks.background.text, word)
+      const wordSubject = getStrNum(fileMarks.subjectContent.text, word)
+      const wordSafe = getStrNum(fileMarks.safeguardMeasure.text, word)
+      this.handleChart([wordBackground || 0, wordSubject || 0, wordSafe || 0, wordFile || 0], this.currentFrequentWord)
+    },
+    // 生成图表
+    handleChart (data, title) {
+      var option
+
+      option = {
+        title: {
+          subtext: title + '（高频词数量）'
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        xAxis: [
+          {
+            type: 'category',
+            data: ['背景', '主题内容', '保护措施', '附件'],
+            axisTick: {
+              interval: 0
+            },
+            axisLabel: {
+              interval: 0
+            }
+          }
+        ],
+        yAxis: {
+          type: 'value'
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        series: [
+          {
+            data: data,
+            type: 'bar',
+            showBackground: true,
+            backgroundStyle: {
+              color: 'rgba(180, 180, 180, 0.2)'
+            }
+          }
+        ]
+      }
+
+      option && this.echarts.setOption(option)
     }
   }
 }

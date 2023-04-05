@@ -20,12 +20,12 @@
       <div class="selector-panel">
         <div class="flex">
           <el-input
-            v-model="queryParams.searchValue"
+            v-model="queryParams.word"
             placeholder="输入关键字"
             class="width"
           >
           </el-input>
-          <el-button class="ml-16" type="primary">确定</el-button>
+          <el-button class="ml-16" type="primary" @click="initList">确定</el-button>
         </div>
       </div>
       <div class="list-container">
@@ -75,7 +75,7 @@
             <el-form-item
               label=""
               prop="newWords"
-              v-if="isEdit"
+              v-if="!isEdit"
             >
               <el-input
                 type="textarea"
@@ -83,13 +83,13 @@
                 v-model="ruleForm.newWords"
               ></el-input>
             </el-form-item>
-            <el-form-item  label="高频词：" prop="word">
+            <el-form-item  v-if="isEdit" label="高频词：" prop="word">
               <el-input
                 placeholder="请输入高频词"
                 v-model="ruleForm.word"
               ></el-input>
             </el-form-item>
-            <el-form-item  label="备注：" prop="remarks">
+            <el-form-item  v-if="isEdit" label="备注：" prop="remarks">
               <el-input
                 placeholder="请输入备注"
                 v-model="ruleForm.remarks"
@@ -130,7 +130,7 @@ export default {
         // 每页的大小
         pageSize: 20,
         // 查询关键字
-        searchValue: null
+        word: null
       },
       // 总条数
       total: 0,
@@ -160,6 +160,7 @@ export default {
     // 修改用户信息
     edit (user) {
       this.title = '修改'
+      this.isEdit = true
       this.ruleForm = user
       this.showAdd = true
     },

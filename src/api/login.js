@@ -5,8 +5,8 @@ export function login (username, password, code, uuid) {
   const data = {
     username,
     password,
-    validateCode: code
-    // uuid
+    code,
+    uuid
   }
   return request({
     url: '/login',

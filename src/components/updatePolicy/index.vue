@@ -30,7 +30,7 @@
               <el-option label="失效" value="失效"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="效率级别:" prop="effectivenessLevel">
+          <el-form-item label="效力级别:" prop="effectivenessLevel">
             <el-select
               style="width: 100%"
               v-model="ruleForm1.effectivenessLevel"
@@ -73,6 +73,7 @@
                 style="white-space: nowrap"
                 class="ml-16"
                 type="primary"
+                @click="confirmOrg"
                 >去确认</el-button
               >
             </div>
@@ -217,6 +218,8 @@ export default {
   },
   data () {
     return {
+      // 校正部门确认
+      showConfirmOrg: false,
       isShow: this.showPanel,
       ruleForm1: {},
       rules: {}
@@ -271,6 +274,9 @@ export default {
       this.$router.push({
         path: '/policy/manage/policyDetail/' + this.policyData.policyFileId
       })
+    },
+    confirmOrg () {
+
     }
   }
 }
