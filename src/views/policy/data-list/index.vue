@@ -19,7 +19,7 @@
     <div>
       <div class="selector-panel">
         <div>
-          <el-input v-model="queryParams.searchValue" placeholder="请输入">
+          <el-input v-model="queryParams.searchValue" placeholder="请输入" @change="initList">
             <div slot="append">
               <el-popover
                 placement="bottom-start"
@@ -27,8 +27,10 @@
                 :offset="-203"
                 trigger="click"
                 :visible-arrow="false"
+                :tabindex="999999"
+                @hide="resetSearch"
               >
-                <deepSearch />
+                <deepSearch @deepSearchList="deepSearchList" ref="deepSearch"/>
                 <span class="deep-search" slot="reference">二级检索</span>
               </el-popover>
 
@@ -70,7 +72,7 @@
                 >文本对比</el-button
               >
               <el-button type="primary" @click="handleStructMerge">行文结构合并</el-button>
-              <el-button type="primary">整篇文章合并</el-button>
+              <el-button type="primary" @click="handleAllMerge">整篇文章合并</el-button>
             </template>
           </div>
         </div>
@@ -117,7 +119,7 @@
                 <div class="dot-red"></div>
                 未确认
               </div>
-              <div v-if="scope.row.status === 1" class="dot-item">
+              <div v-if="scope.row.status == 1" class="dot-item">
                 <div class="dot-green"></div>
                 已确认
               </div>
@@ -147,8 +149,8 @@
             show-overflow-tooltip
           >
             <template slot-scope="scope">
-              <el-tag type="success" v-if="scope.row.writingStructure === 1">已标注</el-tag>
-              <el-tag type="danger" v-if="scope.row.writingStructure === 2">不完全标注</el-tag>
+              <el-tag type="success" v-if="scope.row.writingStructure == 1">已标注</el-tag>
+              <el-tag type="danger" v-if="scope.row.writingStructure == 2">不完全标注</el-tag>
               <el-tag type="info" v-if="!scope.row.writingStructure">未标注</el-tag>
 
             </template>
@@ -227,7 +229,9 @@ import {
   dataClear,
   deleteData,
   structMerge,
-  updateWords
+  updateWords,
+  getDeepDataList,
+  alltMerge
 
 } from '@/api/policy/data-list'
 export default {
@@ -269,6 +273,17 @@ export default {
     this.initList()
   },
   methods: {
+    // 隐藏popover 重置表单
+    resetSearch () {
+      this.$refs.deepSearch.resetForm()
+    },
+    // 二次检索
+    deepSearchList (v) {
+      getDeepDataList(v).then(res => {
+        this.list = res.rows
+        this.total = parseInt(res.total)
+      })
+    },
     // 文本对比
     compareText () {
       if (this.selectedRows.length !== 2) {
@@ -397,7 +412,31 @@ export default {
     handleStructMerge () {
       const ids = this.selectedRows.join(',')
       structMerge(ids).then(res => {
+        const data = res // 这里填内容的字符串
+        const blob = new Blob([data], { type: 'text/plain' })
+        // const blob = new Blob([data], {type: 'audio/wav'})
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = '行文结构合并' // 这里填保存成的文件名
+        a.click()
+        URL.revokeObjectURL(a.href)
+        a.remove()
+      })
+    },
+    // 整篇文章合并
+    handleAllMerge () {
+      const ids = this.selectedRows.join(',')
+      alltMerge(ids).then(res => {
         console.log(res, 'sssssssss')
+        const data = res // 这里填内容的字符串
+        const blob = new Blob([data], { type: 'text/plain' })
+        // const blob = new Blob([data], {type: 'audio/wav'})
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = '整篇文章合并' // 这里填保存成的文件名
+        a.click()
+        URL.revokeObjectURL(a.href)
+        a.remove()
       })
     }
   }

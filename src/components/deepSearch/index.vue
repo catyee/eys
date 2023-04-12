@@ -91,6 +91,7 @@
           v-if="item.name === 'publish_date'"
           v-model="item.value"
           type="date"
+          :append-to-body="false"
           placeholder="选择日期"
         >
         </el-date-picker>
@@ -100,6 +101,7 @@
          v-if="item.name === 'implementation_date'"
          v-model="item.value"
          type="date"
+         :append-to-body="false"
          placeholder="选择日期"
        >
        </el-date-picker>
@@ -155,6 +157,11 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           console.log(this.dynamicValidateForm, 'vvvvvv')
+          const data = this.dynamicValidateForm.deepSearchForm.map(item => {
+            delete item.key
+            return item
+          })
+          this.$emit('deepSearchList', data)
         } else {
           console.log('error submit!!')
           return false
@@ -162,7 +169,16 @@ export default {
       })
     },
     resetForm (formName) {
-      this.$refs[formName].resetFields()
+      this.dynamicValidateForm = {
+        deepSearchForm: [
+          {
+            type: 'AND',
+            name: '-1',
+            value: '',
+            key: Date.now()
+          }
+        ]
+      }
     },
     removeItem (item) {
       var index = this.dynamicValidateForm.deepSearchForm.indexOf(item)

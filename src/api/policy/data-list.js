@@ -7,6 +7,14 @@ export function getPolicyDataList (data) {
     params: data
   })
 }
+// 二次检索
+export function getDeepDataList (data) {
+  return request({
+    url: '/eys/text/advancedSearch',
+    method: 'post',
+    data: data
+  })
+}
 // 获取政策信息
 export function getPolicyData (id) {
   return request({

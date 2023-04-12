@@ -57,6 +57,7 @@
           <el-form-item label="原发布部门:" prop="originalPublishingDepartment">
             <el-input
               placeholder=""
+              readonly
               v-model="ruleForm1.originalPublishingDepartment"
             ></el-input>
           </el-form-item>
@@ -67,6 +68,7 @@
             <div class="flex">
               <el-input
                 placeholder=""
+                readonly
                 v-model="ruleForm1.correctedPublishingDepartment"
               ></el-input>
               <el-button
@@ -106,22 +108,21 @@
           <el-form-item label="背景:" prop="backgroundContent">
             <div class="flex" style="box-sizing: border-box">
               <el-input
-              readonly
+                readonly
                 placeholder=""
                 v-model="ruleForm1.backgroundContent"
               ></el-input>
               <el-button
-               @click="toMark"
+                @click="toMark"
                 v-if="ruleForm1.backgroundContent"
                 style="white-space: nowrap"
                 class="ml-16"
                 type="primary"
-
                 >已标选</el-button
               >
               <el-button
-              v-if="!ruleForm1.backgroundContent"
-               @click="toMark"
+                v-if="!ruleForm1.backgroundContent"
+                @click="toMark"
                 style="white-space: nowrap"
                 class="ml-16"
                 type="primary"
@@ -132,12 +133,12 @@
           <el-form-item label="主题内容:" prop="subjectContentContent">
             <div class="flex">
               <el-input
-              readonly
+                readonly
                 placeholder=""
                 v-model="ruleForm1.subjectContentContent"
               ></el-input>
               <el-button
-               v-if="ruleForm1.subjectContentContent"
+                v-if="ruleForm1.subjectContentContent"
                 style="white-space: nowrap"
                 class="ml-16"
                 type="primary"
@@ -145,38 +146,38 @@
                 >已标选</el-button
               >
               <el-button
-              @click="toMark"
-              v-if="!ruleForm1.subjectContentContent"
-               style="white-space: nowrap"
-               class="ml-16"
-               type="primary"
-               >请标选</el-button
-             >
+                @click="toMark"
+                v-if="!ruleForm1.subjectContentContent"
+                style="white-space: nowrap"
+                class="ml-16"
+                type="primary"
+                >请标选</el-button
+              >
             </div>
           </el-form-item>
           <el-form-item label="保护措施:" prop="safeguardMeasureContent">
             <div class="flex">
               <el-input
-              readonly
+                readonly
                 placeholder=""
                 v-model="ruleForm1.safeguardMeasureContent"
               ></el-input>
               <el-button
-              v-if="ruleForm1.safeguardMeasureContent"
-              style="white-space: nowrap"
-              class="ml-16"
-              type="primary"
-              @click="toMark"
-              >已标选</el-button
-            >
-            <el-button
-            @click="toMark"
-            v-if="!ruleForm1.safeguardMeasureContent"
-            style="white-space: nowrap"
-            class="ml-16"
-            type="primary"
-            >请标选</el-button
-          >
+                v-if="ruleForm1.safeguardMeasureContent"
+                style="white-space: nowrap"
+                class="ml-16"
+                type="primary"
+                @click="toMark"
+                >已标选</el-button
+              >
+              <el-button
+                @click="toMark"
+                v-if="!ruleForm1.safeguardMeasureContent"
+                style="white-space: nowrap"
+                class="ml-16"
+                type="primary"
+                >请标选</el-button
+              >
             </div>
           </el-form-item>
           <el-form-item label="附件:" prop="attachmentFileName">
@@ -184,14 +185,17 @@
               <el-input
                 placeholder=""
                 readonly
-                v-model="ruleForm1.attachmentFileName"
+                v-model="ruleForm1.attachment"
               ></el-input>
-              <!-- <el-button
+              <el-button
                 style="white-space: nowrap"
                 class="ml-16"
                 type="primary"
-                >{{ruleForm1.attachmentFileName?'已标选': '请标选'}}</el-button
-              > -->
+                @click="toMark"
+                >{{
+                  ruleForm1.attachmentFileName ? "已标选" : "请标选"
+                }}</el-button
+              >
             </div>
           </el-form-item>
         </el-form>
@@ -203,11 +207,53 @@
         >
       </span>
     </el-dialog>
+    <el-dialog
+      :visible.sync="showConfirmOrg"
+      width="40%"
+      @close="closeOrgPanel"
+      :show-close="true"
+      :close-on-click-modal="false"
+    >
+      <div class="title" slot="title">校正后发布部门：</div>
+      <div class="mt-30 pb-30">
+        <el-table :data="orgList" tooltip-effect="dark" style="width: 100%">
+          <el-table-column label="原发布部门">
+            <template slot-scope="scope">{{
+              scope.row.originalPublishingDepartment
+            }}</template>
+          </el-table-column>
+          <el-table-column label="校正后部门">
+            <template slot-scope="scope">
+              <el-select
+                v-model="scope.row.correctedPublishingDepartment"
+                placeholder="请选择"
+              >
+                <el-option
+                  v-for="item in list"
+                  :key="item.nameStandardizationId"
+                  :label="item.correctedPublishingDepartment"
+                  :value="item.correctedPublishingDepartment"
+                >
+                </el-option>
+              </el-select>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="closeOrgPanel">取 消</el-button>
+        <el-button type="primary" @click.prevent="handleConfirmOrg"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
   </div>
 </template>
 <script>
 import './index.scss'
 import { updatePolicyData } from '@/api/policy/data-list'
+import { getOrgList } from '@/api/policy/org'
+import { deepClone } from '@/utils/utils'
 
 export default {
   components: {},
@@ -218,6 +264,9 @@ export default {
   },
   data () {
     return {
+      correctList: [],
+      orgList: [],
+      list: [],
       // 校正部门确认
       showConfirmOrg: false,
       isShow: this.showPanel,
@@ -231,11 +280,47 @@ export default {
       this.isShow = v
     },
     policyData (v) {
-      this.ruleForm1 = v
+      this.ruleForm1 = deepClone(v)
+      this.ruleForm1.originalPublishingDepartment = this.ruleForm1.originalPublishingDepartment && this.ruleForm1.originalPublishingDepartment.split(' ').join(',')
+      this.ruleForm1.correctedPublishingDepartment = this.ruleForm1.correctedPublishingDepartment && this.ruleForm1.correctedPublishingDepartment.split(' ').join(',')
     }
   },
+
+  mounted () {
+    this.getList()
+  },
   methods: {
+    handleConfirmOrg () {
+      const list = this.orgList.map(item => {
+        return item.correctedPublishingDepartment
+      })
+      this.ruleForm1.correctedPublishingDepartment = list.join(',')
+      this.closeOrgPanel()
+    },
+    checkIsCurrent (org) {
+      const arr = this.list.filter((item) => {
+        return item.originalPublishingDepartment === org
+      })
+      if (arr.length) return arr[0].correctedPublishingDepartment
+      return false
+    },
+    getList () {
+      getOrgList({
+        // 页数
+        pageNum: 1,
+        // 每页的大小
+        pageSize: 999999
+      }).then((res) => {
+        this.list = res.rows
+      })
+    },
+
+    closeOrgPanel () {
+      this.showConfirmOrg = false
+    },
     confirmSubmit () {
+      // this.ruleForm1.originalPublishingDepartment = this.ruleForm1.originalPublishingDepartment.split(',').join(' ')
+      // this.ruleForm1.correctedPublishingDepartment = this.ruleForm1.correctedPublishingDepartment.split(',').join(' ')
       this.$refs.ruleForm1.validate((valid) => {
         // 验证通过
         if (valid) {
@@ -245,10 +330,11 @@ export default {
             type: 'warning'
           })
             .then(() => {
-              updatePolicyData(this.ruleForm1).then(res => {
+              updatePolicyData(this.ruleForm1).then((res) => {
                 if (res.code === 200) {
                   this.msgSuccess('保存成功')
                   this.$emit('initList')
+                  this.closePanel()
                 } else {
                   this.msgError('保存失败' + res.code)
                 }
@@ -276,7 +362,21 @@ export default {
       })
     },
     confirmOrg () {
-
+      this.showConfirmOrg = true
+      const originOrgList = this.ruleForm1.originalPublishingDepartment.split(',')
+      this.orgList = originOrgList.map(item => {
+        if (this.checkIsCurrent(item)) {
+          return {
+            correctedPublishingDepartment: this.checkIsCurrent(item),
+            originalPublishingDepartment: item
+          }
+        } else {
+          return {
+            correctedPublishingDepartment: item,
+            originalPublishingDepartment: item
+          }
+        }
+      })
     }
   }
 }

@@ -41,7 +41,7 @@
           <el-table-column label="原发文机构">
             <template slot-scope="scope">{{ scope.row.originalPublishingDepartment }}</template>
           </el-table-column>
-          <el-table-column prop="originalPublishingDepartment" label="新发文机构"> </el-table-column>
+          <el-table-column prop="correctedPublishingDepartment" label="新发文机构"> </el-table-column>
           <el-table-column
             prop="changeMode"
             label="变更方式"

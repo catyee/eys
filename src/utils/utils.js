@@ -29,8 +29,8 @@ export function downSaveAs (blob, filename, extension) {
 
 // 深拷贝
 export function deepClone (obj) {
-  const newObj = {}
-  if (obj === null) return obj
+  if (obj === null || obj === undefined) return obj
+  var newObj = obj.constructor === Array ? [] : {}
   if (typeof obj !== 'object' && typeof obj !== 'function') return obj
   if (obj instanceof RegExp) return new RegExp(obj)
   for (const key in obj) {
@@ -41,6 +41,21 @@ export function deepClone (obj) {
   }
   return newObj
 }
+export function copyArr (obj) {
+  var newobj = obj.constructor === Array ? [] : {}
+  if (obj === null) return obj
+  if (typeof obj !== 'object' && typeof obj !== 'function') {
+    return obj
+  }
+  for (const key in obj) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (obj.hasOwnProperty(key)) {
+      newobj[key] = deepClone(obj[key])
+    }
+  }
+  return newobj
+}
+
 // 判断字符串是否为空
 export function isEmpty (str) {
   if (!String.prototype.trim) {
@@ -161,4 +176,24 @@ export function getStrNum (str, target) {
     sum++
   }
   return sum
+}
+export function getElementTop (element) {
+  var actualTop = element.offsetTop
+  var current = element.offsetParent
+
+  while (current !== null) {
+    actualTop += current.offsetTop
+    current = current.offsetParent
+  }
+  return actualTop
+}
+export function getElementLeft (element) {
+  var actualLeft = element.offsetLeft
+  var current = element.offsetParent
+
+  while (current !== null) {
+    actualLeft += current.offsetLeft
+    current = current.offsetParent
+  }
+  return actualLeft
 }

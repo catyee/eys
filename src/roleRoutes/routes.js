@@ -14,7 +14,7 @@ export const policy = [
         path: '/policy/manage',
         name: 'policy-manage',
         hidden: false,
-        meta: { title: '政策模块管理', icon: 'iconevaluate' },
+        meta: { title: '政策模块管理', icon: 'icon-zhengcemokuaiguanli' },
         redirect: '/policy/manage/dataList',
         component: () => import(/* webpackChunkName: "main" */ '../views/main/main.vue'),
         children: [
@@ -40,7 +40,7 @@ export const policy = [
         path: '/policy/clean',
         name: 'policy-clean',
         hidden: false,
-        meta: { title: '政策数据清洗', icon: 'iconevaluate' },
+        meta: { title: '政策数据清洗', icon: 'icon-zhengceshujuqingjie' },
         redirect: '/policy/clean/org-list',
         component: () => import(/* webpackChunkName: "main" */ '../views/main/main.vue'),
         children: [
@@ -58,7 +58,7 @@ export const policy = [
         path: '/policy/analyze',
         name: 'policy-analyze',
         hidden: false,
-        meta: { title: '政策数据分析', icon: 'iconevaluate' },
+        meta: { title: '政策数据分析', icon: 'icon-zhengceshujufenxi' },
         redirect: '/policy/analyze/sight-words',
         component: () => import(/* webpackChunkName: "main" */ '../views/main/main.vue'),
         children: [
