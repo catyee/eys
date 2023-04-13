@@ -142,7 +142,7 @@
 import './index.scss'
 import BreadCrumbs from '@/components/breadCrumbs.vue'
 import Highlighter from 'web-highlighter'
-import { getPolicyDetailData, updateFileData } from '@/api/policy/data-list'
+import { getPolicyDetailData, updateFileData, updatePolicyData } from '@/api/policy/data-list'
 import { deepClone, getStrNum, copyArr } from '@/utils/utils'
 import * as echarts from 'echarts'
 
@@ -152,6 +152,7 @@ export default {
   },
   data () {
     return {
+      policyDataId: null,
       echarts: null,
       // 当前选中的高频词
       currentFrequentWord: null,
@@ -376,17 +377,28 @@ export default {
             ? JSON.stringify(param.attachment)
             : param.attachment
           param.frequentWord = param.frequentWord ? JSON.stringify(param.frequentWord) : param.frequentWord
+          let writingStructure = null
           if (param.backgroundContent && param.subjectContentContent && param.safeguardMeasureContent && param.attachmentContent) {
-            param.writingStructure = 1
+            writingStructure = 1
           } else if (!param.backgroundContent && !param.subjectContentContent && !param.safeguardMeasureContent && !param.attachmentContent) {
-            param.writingStructure = 0
+            writingStructure = 0
           } else {
-            param.writingStructure = 2
+            writingStructure = 2
           }
 
           updateFileData(param).then((res) => {
             if (res.code === 200) {
               this.msgSuccess('保存成功')
+              updatePolicyData({
+                policyDataId: this.policyDataId,
+                writingStructure: writingStructure
+              }).then((res) => {
+                if (res.code === 200) {
+                  this.msgSuccess('保存成功')
+                } else {
+                  this.msgError('保存失败' + res.code)
+                }
+              })
             } else {
               this.msgError('保存失败')
             }
@@ -468,6 +480,7 @@ export default {
       getPolicyDetailData(this.policyFileId).then((res) => {
         if (res.code === 200) {
           const data = res.data
+          this.policyDataId = data.policyDataId
           this.originFileData = data
           this.fileText = data.cleanedContent
           let background = []
