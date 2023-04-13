@@ -4,10 +4,16 @@
         background-color: #fff;
         padding: 24px;
     }
+    .item{
+        font-size: 16px;
+    }
     .el-progress{
         display: flex;
         align-items: center;
         width: 350px;
+    }
+    .item-title{
+        color: #666;
     }
     .el-progress__text{
         white-space: nowrap;
